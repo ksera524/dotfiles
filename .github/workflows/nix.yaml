@@ -1,0 +1,25 @@
+name: Nix Home Manager CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Check flake
+        run: nix --extra-experimental-features nix-command --extra-experimental-features flakes flake check home
+
+      - name: Build Home Manager config
+        run: nix build --extra-experimental-features nix-command --extra-experimental-features flakes home#homeConfigurations.ksera.activationPackage
