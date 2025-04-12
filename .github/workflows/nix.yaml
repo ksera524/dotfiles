@@ -19,7 +19,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
 
       - name: Check flake
-        run: nix --extra-experimental-features nix-command --extra-experimental-features flakes flake check home
+        run: nix flake check ./home --extra-experimental-features nix-command --extra-experimental-features flakes
 
       - name: Build Home Manager config
-        run: nix build --extra-experimental-features nix-command --extra-experimental-features flakes home#homeConfigurations.ksera.activationPackage
+        run: nix build ./home#homeConfigurations.ksera.activationPackage --extra-experimental-features nix-command --extra-experimental-features flakes
