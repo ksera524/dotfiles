@@ -1,25 +1,28 @@
-name: Nix Home Manager CI
+name: CI
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
+  check-home:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, nixos/latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Set up Nix
-        uses: cachix/install-nix-action@v24
+        uses: cachix/install-nix-action@v25
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
 
       - name: Check flake
-        run: nix flake check ./home --extra-experimental-features nix-command --extra-experimental-features flakes
+        run: nix flake check ./home
 
       - name: Build Home Manager config
-        run: nix build ./home#homeConfigurations.ksera.activationPackage --extra-experimental-features nix-command --extra-experimental-features flakes
+        run: nix build ./home#homeConfigurations.ksera.activationPackage
