@@ -35,6 +35,9 @@
     #   echo "Hello, ${config.home.username}!"
     # '')
     pkgs.gh
+    pkgs.rustup
+    pkgs.nodejs_22
+    pkgs.mold
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
@@ -70,6 +73,7 @@
   #
   home.sessionVariables = {
     # EDITOR = "emacs";
+    RUSTFLAGS = "-C linker=mold -C link-arg=-fuse-ld=mold"; #Rustのビルドでmoldを使う
   };
 
   # Let Home Manager install and manage itself.
