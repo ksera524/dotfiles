@@ -18,34 +18,38 @@
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = [
-    # # Adds the 'hello' command to your environment. It prints a friendly
-    # # "Hello, world!" when run.
-    # pkgs.hello
-
-    # # It is sometimes useful to fine-tune packages, for example, by applying
-    # # overrides. You can do that directly here, just don't forget the
-    # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-    # # fonts?
-    # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
-
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
-    pkgs.gh
-    pkgs.rustup
-    pkgs.nodejs_22
-    pkgs.mold
+    # Development tools
+    pkgs.gh                    # GitHub CLI
+    pkgs.nodejs_22             # Node.js (latest LTS)
+    pkgs.mold                  # Fast linker
+    
+    # Rust toolchain - using Nix packages for better integration
+    pkgs.rustc                 # Rust compiler
+    pkgs.cargo                 # Cargo package manager
+    pkgs.rustfmt               # Rust formatter
+    pkgs.clippy                # Rust linter
+    pkgs.rust-analyzer         # Rust language server
+    
+    # Additional Rust tools
+    pkgs.cargo-watch          # Auto-rebuild on file changes
+    pkgs.cargo-edit           # cargo add/rm/upgrade commands
+    pkgs.cargo-outdated       # Check for outdated dependencies
+    pkgs.cargo-audit          # Security audit for dependencies
+    
+    # Build tools
+    pkgs.pkg-config           # For building native dependencies
+    pkgs.openssl              # Common dependency for Rust projects
+    
+    # Optional: Remove rustup if you prefer Nix-managed Rust
+    # pkgs.rustup
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
   home.file = {
     # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
+    # the Nix store. Activating the configuration will then make '~/.screenrc' a
+    # symlink to the Nix store copy.
     # ".screenrc".source = dotfiles/screenrc;
 
     # # You can also set the file content immediately.
@@ -73,7 +77,9 @@
   #
   home.sessionVariables = {
     # EDITOR = "emacs";
-    RUSTFLAGS = "-C linker=mold -C link-arg=-fuse-ld=mold"; #Rustのビルドでmoldを使う
+    RUSTFLAGS = "-C linker=mold -C link-arg=-fuse-ld=mold"; # Rustのビルドでmoldを使う
+    RUST_BACKTRACE = "1";      # Rustのエラー時にバックトレースを表示
+    CARGO_INCREMENTAL = "1";   # インクリメンタルコンパイルを有効化
   };
 
   programs.git = {
