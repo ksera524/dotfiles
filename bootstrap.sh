@@ -1,5 +1,5 @@
 # makeをインストール
-sudo apt install make
+apt install make
 
 # インストール後、セットアップを実行
 make setup
