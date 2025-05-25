@@ -22,7 +22,7 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: Check flake
-        run: nix flake check ./home
+        run: nix flake check
 
       - name: Build Home Manager config
-        run: nix build ./home#homeConfigurations.ksera.activationPackage
+        run: nix build ./#homeConfigurations.ksera.activationPackage

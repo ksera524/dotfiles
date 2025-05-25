@@ -13,6 +13,7 @@
   outputs = { nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
+      username = "ksera";
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       homeConfigurations."ksera" = home-manager.lib.homeManagerConfiguration {
