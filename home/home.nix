@@ -76,6 +76,37 @@
     RUSTFLAGS = "-C linker=mold -C link-arg=-fuse-ld=mold"; #Rustのビルドでmoldを使う
   };
 
+  programs.git = {
+    enable = true;
+
+    userName = "ksera524";
+    userEmail = "ksera631@gmail.com";
+
+    lfs.enable = true;
+
+    delta = {
+      enable = true;
+      options = {
+        line-numbers = true;
+        theme = "OneHalfDark";
+      };
+    };
+
+    aliases = {
+      co = "checkout";
+      br = "branch -vv";
+      st = "status -sb";
+    };
+
+    extraConfig = {
+      init.defaultBranch = "main";
+      fetch.prune = true;
+      pull.rebase = true;
+      push.autoSetUpRemote = true;
+      core.editor = "vim";
+    };
+  };
+
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 }
