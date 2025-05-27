@@ -37,11 +37,15 @@
     pkgs.cargo-audit          # Security audit for dependencies
     
     # Build tools
-    pkgs.pkg-config           # For building native dependencies
-    pkgs.openssl              # Common dependency for Rust projects
+    pkgs.gcc
+    pkgs.gnumake
+    pkgs.binutils
+    pkgs.glibc
+    pkgs.stdenv.cc
+    pkgs.pkg-config
+    pkgs.openssl
     
-    # Optional: Remove rustup if you prefer Nix-managed Rust
-    # pkgs.rustup
+    
   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
