@@ -23,7 +23,7 @@ sudo apt install -y nodejs
 
 echo "🔧 Installing Rust..."
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-echo 'source "$HOME/.cargo/env"' >> ~/.bashrc
+echo "source \"\$HOME/.cargo/env\"" >> ~/.bashrc
 source "$HOME/.cargo/env"
 
 echo "🔧 Cloning and building mold from source..."
@@ -32,7 +32,7 @@ git clone --branch stable https://github.com/rui314/mold.git
 cd mold
 ./install-build-deps.sh
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -B build
-cmake --build build -j$(nproc)
+cmake --build build -j"$(nproc)"
 sudo cmake --build build --target install
 cd ~
 rm -rf mold
