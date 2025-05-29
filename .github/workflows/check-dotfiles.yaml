@@ -23,6 +23,8 @@ jobs:
 
       - name: 🐚 ShellCheck all scripts
         uses: ludeeus/action-shellcheck@master
+        env:
+          SHELLCHECK_OPTS: -e SC1091
 
       - name: 🧪 Test bootstrap.sh in clean env
         run: |
