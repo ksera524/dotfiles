@@ -1,0 +1,30 @@
+name: Check dotfiles setup
+
+on:
+  push:
+    paths:
+      - '**.sh'
+      - '.github/workflows/check-dotfiles.yml'
+  pull_request:
+    paths:
+      - '**.sh'
+      - '.github/workflows/check-dotfiles.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🔐 Make scripts executable
+        run: chmod +x *.sh
+
+      - name: 🐚 ShellCheck all scripts
+        uses: ludeeus/action-shellcheck@master
+
+      - name: 🧪 Test bootstrap.sh in clean env
+        run: |
+          sudo apt update
+          bash bootstrap.sh

@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "ms-ceintl.vscode-language-pack-ja",
+    "rust-lang.rust-analyzer",
+    "cordx56.rustowl-vscode",
+    "GitHub.copilot",
+    "GitHub.copilot-chat",
+    "vscode-icons-team.vscode-icons",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}
