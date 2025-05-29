@@ -29,4 +29,4 @@ jobs:
       - name: 🧪 Test bootstrap.sh in clean env
         run: |
           sudo apt update
-          bash bootstrap.sh
+          sudo bash bootstrap.sh
