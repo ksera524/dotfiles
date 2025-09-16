@@ -27,7 +27,7 @@ if grep -qi microsoft /proc/version; then
     echo "✓ VS Code command found in WSL"
 
     # 現在インストールされている拡張機能を取得
-    INSTALLED_EXTENSIONS=$(code --list-extensions 2>/dev/null | grep -v "^WSL:" | grep -v "にインストールされている拡張機能" || true)
+    INSTALLED_EXTENSIONS=$(code --list-extensions 2>/dev/null | tail -n +2 || true)
 
     # 推奨拡張機能をインストール
     jq -r '.recommendations[]' .vscode/extensions.json | while read -r ext; do
@@ -36,7 +36,9 @@ if grep -qi microsoft /proc/version; then
         echo "✓ Already installed: $ext"
       else
         echo "➡️  Installing extension: $ext"
-        code --install-extension "$ext" --force 2>/dev/null || echo "  ⚠️  Failed to install: $ext"
+        if ! code --install-extension "$ext" --force 2>&1; then
+          echo "  ⚠️  Failed to install: $ext"
+        fi
       fi
     done
   else
@@ -62,7 +64,9 @@ elif command -v code &> /dev/null; then
       echo "✓ Already installed: $ext"
     else
       echo "➡️  Installing extension: $ext"
-      code --install-extension "$ext" --force 2>/dev/null || echo "  ⚠️  Failed to install: $ext"
+      if ! code --install-extension "$ext" --force 2>&1; then
+        echo "  ⚠️  Failed to install: $ext"
+      fi
     fi
   done
 else

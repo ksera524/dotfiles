@@ -49,22 +49,22 @@ fi
 
 echo "🔗 Creating symbolic links..."
 # .bashrcをシンボリックリンクでホームディレクトリに配置
-if [ -f "$HOME/dotfiles/.bashrc" ]; then
+if [ -f "$HOME/dotfiles/bash/bashrc" ]; then
   # 既存のファイルやリンクがあれば削除
   if [ -e "$HOME/.bashrc" ] || [ -L "$HOME/.bashrc" ]; then
     rm -f "$HOME/.bashrc"
   fi
-  ln -s "$HOME/dotfiles/.bashrc" "$HOME/.bashrc"
+  ln -s "$HOME/dotfiles/bash/bashrc" "$HOME/.bashrc"
   echo "  ✓ .bashrc linked"
 fi
 
 # mise設定ファイルをシンボリックリンクでホームディレクトリに配置
-if [ -f "$HOME/dotfiles/.mise.toml" ]; then
+if [ -f "$HOME/dotfiles/mise/mise.toml" ]; then
   # 既存のファイルやリンクがあれば削除
   if [ -e "$HOME/.mise.toml" ] || [ -L "$HOME/.mise.toml" ]; then
     rm -f "$HOME/.mise.toml"
   fi
-  ln -s "$HOME/dotfiles/.mise.toml" "$HOME/.mise.toml"
+  ln -s "$HOME/dotfiles/mise/mise.toml" "$HOME/.mise.toml"
   echo "  ✓ mise configuration linked"
 fi
 
