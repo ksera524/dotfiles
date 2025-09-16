@@ -18,38 +18,52 @@ ln -sv "$HOME/dotfiles/.vscode/settings.json" "$VSCODE_USER_DIR/settings.json"
 # 拡張機能のインストール
 echo "📦 Installing recommended extensions..."
 
-# WSL環境でのVS Code確認と適切なコマンドの選択
-CODE_CMD=""
-
-# WSL環境でWindows側のVS Codeを使用する場合
+# WSL環境でのVS Code確認
 if grep -qi microsoft /proc/version; then
-  # WSL用のcode.cmdまたはcode.exeを探す
-  if [ -f "/mnt/c/Users/$USER/AppData/Local/Programs/Microsoft VS Code/bin/code.cmd" ]; then
-    CODE_CMD="/mnt/c/Users/$USER/AppData/Local/Programs/Microsoft\ VS\ Code/bin/code.cmd"
-  elif [ -f "/mnt/c/Program Files/Microsoft VS Code/bin/code.cmd" ]; then
-    CODE_CMD="/mnt/c/Program\ Files/Microsoft\ VS\ Code/bin/code.cmd"
-  fi
+  echo "🐧 Detected WSL environment"
 
-  # PowerShell経由でWindows側のVS Codeを実行
-  if [ -n "$CODE_CMD" ] && command -v powershell.exe &> /dev/null; then
+  # WSL環境では code コマンドが利用可能（VS Code Server経由）
+  if command -v code &> /dev/null; then
+    echo "✓ VS Code command found in WSL"
+
+    # 現在インストールされている拡張機能を取得
+    INSTALLED_EXTENSIONS=$(code --list-extensions 2>/dev/null | grep -v "^WSL:" | grep -v "にインストールされている拡張機能" || true)
+
+    # 推奨拡張機能をインストール
     jq -r '.recommendations[]' .vscode/extensions.json | while read -r ext; do
-      echo "➡️  Installing extension: $ext"
-      powershell.exe -Command "code --install-extension '$ext' --force" 2>/dev/null || true
+      # 既にインストール済みかチェック
+      if echo "$INSTALLED_EXTENSIONS" | grep -qi "^${ext}$"; then
+        echo "✓ Already installed: $ext"
+      else
+        echo "➡️  Installing extension: $ext"
+        code --install-extension "$ext" --force 2>/dev/null || echo "  ⚠️  Failed to install: $ext"
+      fi
     done
   else
-    echo "⚠️  VS Code not found or cannot execute from WSL."
-    echo "📌 Please install extensions manually from VS Code:"
+    echo "⚠️  VS Code command not found in WSL."
+    echo "📌 Please ensure VS Code is opened from WSL at least once using 'code .'"
+    echo "📌 Then run this script again."
+    echo ""
+    echo "📋 Extensions to be installed:"
     jq -r '.recommendations[]' .vscode/extensions.json | while read -r ext; do
       echo "  - $ext"
     done
-    echo ""
-    echo "💡 Tip: Open VS Code from WSL using 'code .' and install extensions from the Extensions panel."
   fi
 elif command -v code &> /dev/null; then
   # Native Linux環境
+  echo "🐧 Detected native Linux environment"
+
+  # 現在インストールされている拡張機能を取得
+  INSTALLED_EXTENSIONS=$(code --list-extensions 2>/dev/null || true)
+
   jq -r '.recommendations[]' .vscode/extensions.json | while read -r ext; do
-    echo "➡️  Installing extension: $ext"
-    code --install-extension "$ext" --force
+    # 既にインストール済みかチェック
+    if echo "$INSTALLED_EXTENSIONS" | grep -qi "^${ext}$"; then
+      echo "✓ Already installed: $ext"
+    else
+      echo "➡️  Installing extension: $ext"
+      code --install-extension "$ext" --force 2>/dev/null || echo "  ⚠️  Failed to install: $ext"
+    fi
   done
 else
   echo "⚠️  VS Code command not found. Please install extensions manually:"
