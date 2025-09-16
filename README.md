@@ -1,9 +1,69 @@
 # Dotfiles
 
+WSL Ubuntu環境向けのdotfilesリポジトリです。[mise](https://mise.jdx.dev/)を使用して各種開発ツールを管理します。
+
+## 特徴
+
+- 🔧 **mise**による統一的なツール管理
+- 🐧 WSL Ubuntu環境に最適化
+- 🐳 Docker環境の自動セットアップ
+- 🎨 VS Code設定の自動適用
+
 ## Installation
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/bootstrap.sh)
+```
+
+このコマンドは以下を実行します：
+1. dotfilesリポジトリのクローン
+2. miseのインストールと設定
+3. 開発ツールのインストール（Node.js, Rust, Python等）
+4. Dockerのセットアップ
+5. VS Code設定の適用
+6. Git設定の適用
+
+## mise による開発ツール管理
+
+### インストールされるツール
+
+`.mise.toml`に定義された開発ツールが`install.sh`で自動的にインストールされます：
+
+- **言語ランタイム**: Node.js (LTS), Rust (stable), Python 3.12
+- **CLIツール**: GitHub CLI, ripgrep, fd, bat, eza
+- **コンテナ**: Docker, Docker Compose
+
+### ツールの追加・管理
+
+```bash
+# .mise.tomlを編集して新しいツールを追加
+vi .mise.toml
+
+# 追加したツールをインストール
+mise install
+
+# すべてのツールを最新版に更新
+./update-tools.sh
+```
+
+### miseの使い方
+
+```bash
+# インストール済みツールの確認
+mise list
+
+# グローバルにツールをインストール
+mise use --global node@20
+mise use --global rust@1.75
+
+# プロジェクト固有のバージョン設定
+mise use node@18  # プロジェクトの.mise.tomlに保存される
+
+# 特定のツールを更新
+mise upgrade node
+
+# すべてのツールを更新
+mise upgrade --all
 ```
 
 ## VS Code Settings
