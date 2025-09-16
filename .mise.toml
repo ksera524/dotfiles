@@ -10,6 +10,8 @@ ripgrep = "latest"   # Fast grep (rg command)
 fd = "latest"        # Fast find
 bat = "latest"       # Better cat with syntax highlighting
 eza = "latest"       # Modern ls replacement
+jq = "latest"        # JSON processor
+bottom = "latest"    # System and process monitor (htop alternative)
 
 [env]
 PATH = "./node_modules/.bin:$PATH"

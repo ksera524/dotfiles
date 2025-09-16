@@ -19,7 +19,7 @@ echo "📍 Environment: $(lsb_release -ds 2>/dev/null || cat /etc/*release | hea
 echo "🔧 Updating packages..."
 sudo apt update && sudo apt upgrade -y
 
-echo "📦 Installing essential packages..."
+echo "📦 Installing system dependencies..."
 sudo apt install -y \
   curl \
   git \
@@ -27,14 +27,8 @@ sudo apt install -y \
   build-essential \
   pkg-config \
   libssl-dev \
-  jq \
-  cmake \
-  clang \
   g++ \
   lld \
-  vim \
-  htop \
-  tree \
   ca-certificates \
   gnupg \
   lsb-release
@@ -127,14 +121,14 @@ if command -v npm &> /dev/null; then
   if [ ! -d "$HOME/.npm-global" ]; then
     mkdir -p "$HOME/.npm-global"
     npm config set prefix "$HOME/.npm-global"
-    
+
     # PATHに追加（.bashrcに既に存在しない場合のみ）
     if ! grep -q '.npm-global/bin' ~/.bashrc; then
       echo "" >> ~/.bashrc
       echo '# npm global packages' >> ~/.bashrc
       echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.bashrc
     fi
-    
+
     # 現在のセッションでも有効化
     export PATH="$HOME/.npm-global/bin:$PATH"
     echo "  ✓ Configured npm global directory"
@@ -168,24 +162,6 @@ if command -v npm &> /dev/null; then
   fi
 else
   echo "  ⚠️  npm not found. Skipping npm packages installation."
-fi
-
-# WSL特有の設定
-echo "🔧 Configuring WSL-specific settings..."
-
-# Windows側のホームディレクトリへのリンク作成（存在しない場合のみ）
-if [ -d "/mnt/c/Users" ] && [ ! -L "$HOME/winhome" ]; then
-  WIN_USER=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r\n')
-  if [ -n "$WIN_USER" ] && [ -d "/mnt/c/Users/$WIN_USER" ]; then
-    ln -s "/mnt/c/Users/$WIN_USER" "$HOME/winhome"
-    echo "  ✓ Created symlink to Windows home directory"
-  fi
-fi
-
-# Git credential helperをWindows側と共有
-if command -v git &> /dev/null; then
-  git config --global credential.helper "/mnt/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe"
-  echo "  ✓ Configured Git credential helper for Windows integration"
 fi
 
 echo "✅ WSL Ubuntu setup complete!"
