@@ -26,20 +26,4 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 echo "source \"\$HOME/.cargo/env\"" >> ~/.bashrc
 source "$HOME/.cargo/env"
 
-echo "🔧 Cloning and building mold from source..."
-cd ~
-git clone --branch stable https://github.com/rui314/mold.git
-cd mold
-sudo ./install-build-deps.sh
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -B build
-cmake --build build -j"$(nproc)"
-sudo cmake --build build --target install
-cd ~
-rm -rf mold
-rm -f mold-*.tar.gz  # ← .tar.gzも削除
-
-if ! grep -q 'RUSTFLAGS=' ~/.bashrc; then
-  echo "export RUSTFLAGS=\"-C linker=mold -C link-arg=-fuse-ld=mold\"" >> ~/.bashrc
-fi
-
 echo "✅ Installation complete! Please run 'exec \$SHELL' or restart your terminal to apply changes."
