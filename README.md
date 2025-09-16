@@ -19,9 +19,19 @@ bash <(curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/boots
 1. dotfilesリポジトリのクローン
 2. miseのインストールと設定
 3. 開発ツールのインストール（Node.js, Rust, Python等）
-4. Dockerのセットアップ
+4. Docker/Docker Composeのインストールとセットアップ（WSL2環境用）
 5. VS Code設定の適用
 6. Git設定の適用
+
+### Docker セットアップ
+
+WSL2環境にDocker/Docker Composeを自動的にインストールします。個別にDockerをセットアップする場合：
+
+```bash
+./setup-docker.sh
+```
+
+**注意**: Dockerグループへの追加後は、一度ログアウトして再ログインするか、`newgrp docker`を実行してください。
 
 ## mise による開発ツール管理
 

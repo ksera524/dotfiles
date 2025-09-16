@@ -59,8 +59,10 @@ fi
 
 # WSL2でDocker daemonを自動起動
 if grep -qi microsoft /proc/version; then
-    if ! service docker status > /dev/null 2>&1; then
-        sudo service docker start > /dev/null 2>&1
+    if command -v docker &> /dev/null; then
+        if ! sudo service docker status > /dev/null 2>&1; then
+            sudo service docker start > /dev/null 2>&1
+        fi
     fi
 fi
 
@@ -70,3 +72,6 @@ if [ -f "$HOME/.bashrc.local" ]; then
 fi
 
 alias cc='claude --dangerously-skip-permissions'
+
+# Add mise shims to PATH
+export PATH="$HOME/.local/share/mise/shims:$PATH"

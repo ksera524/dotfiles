@@ -11,6 +11,31 @@ cd ~/dotfiles
 echo "🔧 Running install.sh (with mise setup)..."
 bash install.sh
 
+# Docker installation for WSL2
+echo "🐳 Installing Docker..."
+if ! command -v docker &> /dev/null; then
+  echo "  Installing Docker and Docker Compose..."
+  sudo apt update
+  sudo apt install -y docker.io docker-compose
+
+  # Add current user to docker group
+  echo "  Adding user to docker group..."
+  sudo usermod -aG docker $USER
+
+  # Start Docker service
+  echo "  Starting Docker service..."
+  sudo service docker start
+
+  echo "  ✓ Docker installed successfully"
+  echo "  ⚠️  Note: You may need to log out and back in for docker group changes to take effect"
+else
+  echo "  ✓ Docker is already installed"
+  # Ensure Docker service is running
+  if ! sudo service docker status > /dev/null 2>&1; then
+    sudo service docker start
+  fi
+fi
+
 # miseを現在のセッションで有効化し、インストール状況を確認
 if [ -f "$HOME/.local/bin/mise" ]; then
   export PATH="$HOME/.local/bin:$PATH"
