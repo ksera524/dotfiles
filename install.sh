@@ -85,6 +85,8 @@ if command -v mise &> /dev/null; then
   fi
 fi
 
+source ~/.bashrc
+
 echo "🔧 Installing Docker..."
 if ! command -v docker &> /dev/null; then
   # Docker公式GPGキーを追加
