@@ -80,6 +80,7 @@ if command -v mise &> /dev/null; then
   if mise which npm &> /dev/null; then
     echo "  Installing TypeScript globally via mise npm..."
     mise exec -- npm install -g typescript
+    mise exec -- npm install -g @anthropic-ai/claude-code
     echo "  ✓ TypeScript installed globally"
   fi
 fi

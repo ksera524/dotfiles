@@ -52,8 +52,9 @@ alias mise-status='mise list --current'
 PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
 # miseが利用可能な場合は読み込み
-if [ -f "$HOME/.local/share/mise/shims/mise" ]; then
-    eval "$($HOME/.local/share/mise/shims/mise activate bash)"
+if [ -f "$HOME/.local/bin/mise" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+    eval "$($HOME/.local/bin/mise activate bash)"
 fi
 
 # WSL2でDocker daemonを自動起動
@@ -67,3 +68,5 @@ fi
 if [ -f "$HOME/.bashrc.local" ]; then
     . "$HOME/.bashrc.local"
 fi
+
+alias cc='claude --dangerously-skip-permissions'
