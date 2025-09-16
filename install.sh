@@ -123,26 +123,51 @@ fi
 # グローバルnpmパッケージの更新（miseでNode.jsがインストールされている場合）
 echo "📦 Installing global npm packages..."
 if command -v npm &> /dev/null; then
+  # npmのグローバルディレクトリをユーザーディレクトリに設定
+  if [ ! -d "$HOME/.npm-global" ]; then
+    mkdir -p "$HOME/.npm-global"
+    npm config set prefix "$HOME/.npm-global"
+    
+    # PATHに追加（.bashrcに既に存在しない場合のみ）
+    if ! grep -q '.npm-global/bin' ~/.bashrc; then
+      echo "" >> ~/.bashrc
+      echo '# npm global packages' >> ~/.bashrc
+      echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.bashrc
+    fi
+    
+    # 現在のセッションでも有効化
+    export PATH="$HOME/.npm-global/bin:$PATH"
+    echo "  ✓ Configured npm global directory"
+  fi
+
   # よく使うnpmツールをインストール
   echo "  Installing useful npm tools..."
 
   # npm-check-updates - package.jsonの依存関係更新チェック
-  if ! npm list -g npm-check-updates --depth=0 &> /dev/null; then
+  if ! npm list -g npm-check-updates --depth=0 &> /dev/null 2>&1; then
     npm install -g npm-check-updates
     echo "    ✓ npm-check-updates installed"
+  else
+    echo "    ✓ npm-check-updates already installed"
   fi
 
   # prettier - コードフォーマッター
-  if ! npm list -g prettier --depth=0 &> /dev/null; then
+  if ! npm list -g prettier --depth=0 &> /dev/null 2>&1; then
     npm install -g prettier
     echo "    ✓ prettier installed"
+  else
+    echo "    ✓ prettier already installed"
   fi
 
   # typescript - TypeScript
-  if ! npm list -g typescript --depth=0 &> /dev/null; then
+  if ! npm list -g typescript --depth=0 &> /dev/null 2>&1; then
     npm install -g typescript
     echo "    ✓ typescript installed"
+  else
+    echo "    ✓ typescript already installed"
   fi
+else
+  echo "  ⚠️  npm not found. Skipping npm packages installation."
 fi
 
 # WSL特有の設定
