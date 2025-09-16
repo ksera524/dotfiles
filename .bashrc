@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# 履歴設定
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+export HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend
+
+# コマンド実行後にウィンドウサイズを更新
+shopt -s checkwinsize
+
+# lsのカラーサポートを有効化
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# 共通エイリアス
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# Gitエイリアス
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gd='git diff'
+alias gl='git log --oneline --graph --decorate'
+alias gp='git push'
+alias gpl='git pull'
+
+# 安全性エイリアス
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+# ブートストラップ・セットアップ用エイリアス
+alias dotfiles-install='cd ~/dotfiles && bash install.sh'
+alias dotfiles-update='cd ~/dotfiles && bash update-tools.sh'
+alias dotfiles-vscode='cd ~/dotfiles && bash apply-vscode-config.sh'
+alias dotfiles-git='cd ~/dotfiles && bash setup-git.sh'
+alias dotfiles-bootstrap='bash <(curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/bootstrap.sh)'
+alias mise-status='mise list --current'
+
+# プロンプトのカスタマイズ
+PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+
+# miseが利用可能な場合は読み込み
+if [ -f "$HOME/.local/share/mise/shims/mise" ]; then
+    eval "$($HOME/.local/share/mise/shims/mise activate bash)"
+fi
+
+# WSL2でDocker daemonを自動起動
+if grep -qi microsoft /proc/version; then
+    if ! service docker status > /dev/null 2>&1; then
+        sudo service docker start > /dev/null 2>&1
+    fi
+fi
+
+# ローカルbashrcが存在する場合は読み込み
+if [ -f "$HOME/.bashrc.local" ]; then
+    . "$HOME/.bashrc.local"
+fi

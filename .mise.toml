@@ -12,6 +12,7 @@ bat = "latest"       # Better cat with syntax highlighting
 eza = "latest"       # Modern ls replacement
 jq = "latest"        # JSON processor
 bottom = "latest"    # System and process monitor (htop alternative)
+npm = "latest"
 
 [env]
 PATH = "./node_modules/.bin:$PATH"
