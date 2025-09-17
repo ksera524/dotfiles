@@ -76,6 +76,25 @@ mise upgrade node
 mise upgrade --all
 ```
 
+### dotfilesの更新をpush
+
+どこからでもdotfilesの変更をpushできるスクリプトが用意されています：
+
+```bash
+# デフォルトメッセージでpush
+dotpush
+
+# カスタムメッセージでpush
+dotpush "Add new aliases"
+```
+
+このコマンドは以下を自動的に実行します：
+1. `~/dotfiles`ディレクトリに移動
+2. 変更をステージング（`git add -A`）
+3. コミットを作成
+4. GitHubにpush
+5. 元のディレクトリに戻る
+
 ## VS Code Settings
 
 ### RustOwl Extension Colors
