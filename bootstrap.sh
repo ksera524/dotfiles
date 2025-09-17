@@ -181,6 +181,7 @@ fi
 
 # Only source bashrc if we're in an interactive shell, not when piped
 if [ -t 0 ] && [ -f ~/.bashrc ]; then
+  # shellcheck source=/dev/null
   source ~/.bashrc
 fi
 
@@ -205,15 +206,15 @@ if ! command -v docker &> /dev/null; then
 
   # ユーザーをdockerグループに追加
   sudo groupadd -f docker
-  sudo usermod -aG docker $USER
+  sudo usermod -aG docker "$USER"
   log_success "Docker installed"
   log_warning "Please log out and back in for docker group membership to take effect"
 else
   log_success "Docker already installed"
   # dockerグループへの追加を確認
-  if ! groups $USER | grep -q '\bdocker\b'; then
+  if ! groups "$USER" | grep -q '\bdocker\b'; then
     sudo groupadd -f docker
-    sudo usermod -aG docker $USER
+    sudo usermod -aG docker "$USER"
     log_success "Added user to docker group"
     log_warning "Please log out and back in for docker group membership to take effect"
   fi

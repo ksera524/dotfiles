@@ -11,7 +11,11 @@ shopt -s checkwinsize
 
 # lsのカラーサポートを有効化
 if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    if test -r ~/.dircolors; then
+        eval "$(dircolors -b ~/.dircolors)"
+    else
+        eval "$(dircolors -b)"
+    fi
     alias ls='ls --color=auto'
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
@@ -50,8 +54,9 @@ alias mise-status='mise list --current'
 
 # dotfilesの更新をpushする関数
 dotpush() {
-    local current_dir=$(pwd)
-    cd ~/dotfiles
+    local current_dir
+    current_dir=$(pwd)
+    cd ~/dotfiles || return
 
     git add -A
 
@@ -63,7 +68,7 @@ dotpush() {
 
     git push
 
-    cd "$current_dir"
+    cd "$current_dir" || return
 }
 
 # プロンプトのカスタマイズ
@@ -72,7 +77,7 @@ PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 # miseが利用可能な場合は読み込み
 if [ -f "$HOME/.local/bin/mise" ]; then
     export PATH="$HOME/.local/bin:$PATH"
-    eval "$($HOME/.local/bin/mise activate bash)"
+    eval "$("$HOME/.local/bin/mise" activate bash)"
 fi
 
 
@@ -102,7 +107,7 @@ mise() {
   case "$command" in
   deactivate|shell|sh)
     # if argv doesn't contains -h,--help
-    if [[ ! " $@ " =~ " --help " ]] && [[ ! " $@ " =~ " -h " ]]; then
+    if [[ ! " $* " =~ " --help " ]] && [[ ! " $* " =~ " -h " ]]; then
       eval "$(command /home/ksera/.local/bin/mise "$command" "$@")"
       return $?
     fi
