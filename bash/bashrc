@@ -48,6 +48,24 @@ alias dotfiles-git='cd ~/dotfiles && bash setup-git.sh'
 alias dotfiles-bootstrap='bash <(curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/bootstrap.sh)'
 alias mise-status='mise list --current'
 
+# dotfilesの更新をpushする関数
+dotpush() {
+    local current_dir=$(pwd)
+    cd ~/dotfiles
+
+    git add -A
+
+    if [ -n "$1" ]; then
+        git commit -m "$1"
+    else
+        git commit -m "Update dotfiles"
+    fi
+
+    git push
+
+    cd "$current_dir"
+}
+
 # プロンプトのカスタマイズ
 PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
@@ -57,14 +75,6 @@ if [ -f "$HOME/.local/bin/mise" ]; then
     eval "$($HOME/.local/bin/mise activate bash)"
 fi
 
-# WSL2でDocker daemonを自動起動
-if grep -qi microsoft /proc/version; then
-    if command -v docker &> /dev/null; then
-        if ! sudo service docker status > /dev/null 2>&1; then
-            sudo service docker start > /dev/null 2>&1
-        fi
-    fi
-fi
 
 # ローカルbashrcが存在する場合は読み込み
 if [ -f "$HOME/.bashrc.local" ]; then
