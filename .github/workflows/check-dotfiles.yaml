@@ -108,12 +108,23 @@ jobs:
   markdown-lint:
     name: Markdown Lint
     runs-on: ubuntu-latest
-    if: hashFiles('**/*.md') != ''
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
+      - name: 🔍 Check for Markdown files
+        id: check_md
+        run: |
+          if find . -name "*.md" -type f | grep -q .; then
+            echo "has_md=true" >> $GITHUB_OUTPUT
+            echo "Markdown files found"
+          else
+            echo "has_md=false" >> $GITHUB_OUTPUT
+            echo "No Markdown files found"
+          fi
+
       - name: 📝 Lint Markdown files
+        if: steps.check_md.outputs.has_md == 'true'
         uses: DavidAnson/markdownlint-cli2-action@v16
         continue-on-error: true
         with:
