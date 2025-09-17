@@ -94,9 +94,18 @@ sudo apt install -y \
 
 log_info "Installing mise..."
 if ! command -v mise &> /dev/null; then
-  curl https://mise.run | sh
+  # Download and install mise without piping to avoid nested pipes
+  MISE_INSTALL_SCRIPT=$(mktemp)
+  curl -fsSL https://mise.run -o "$MISE_INSTALL_SCRIPT"
+  sh "$MISE_INSTALL_SCRIPT"
+  rm -f "$MISE_INSTALL_SCRIPT"
   export PATH="$HOME/.local/bin:$PATH"
-  eval "$(~/.local/bin/mise activate bash)"
+  # Don't use eval with command substitution in piped context
+  if [ -f "$HOME/.local/bin/mise" ]; then
+    "$HOME/.local/bin/mise" activate bash >> "$HOME/.bashrc.mise.tmp"
+    cat "$HOME/.bashrc.mise.tmp" >> "$HOME/.bashrc"
+    rm -f "$HOME/.bashrc.mise.tmp"
+  fi
   log_success "mise installed"
 else
   log_success "mise already installed"
@@ -134,6 +143,11 @@ if [ -d "$HOME/dotfiles/fish" ]; then
     mv "$HOME/.config/fish/config.fish" "$HOME/.config/fish/config.fish.backup"
   fi
   ln -sf "$HOME/dotfiles/fish/config.fish" "$HOME/.config/fish/config.fish"
+
+  # Remove existing directories/links before creating symlinks
+  [ -e "$HOME/.config/fish/functions" ] && rm -rf "$HOME/.config/fish/functions"
+  [ -e "$HOME/.config/fish/conf.d" ] && rm -rf "$HOME/.config/fish/conf.d"
+
   ln -sf "$HOME/dotfiles/fish/functions" "$HOME/.config/fish/functions"
   ln -sf "$HOME/dotfiles/fish/conf.d" "$HOME/.config/fish/conf.d"
   log_success "fish configuration linked"
@@ -160,7 +174,10 @@ if command -v mise &> /dev/null; then
   log_success "All mise tools installed"
 fi
 
-source ~/.bashrc
+# Only source bashrc if we're in an interactive shell, not when piped
+if [ -t 0 ] && [ -f ~/.bashrc ]; then
+  source ~/.bashrc
+fi
 
 # ============================================================================
 # Docker Setup for WSL2
