@@ -1,62 +1,46 @@
 # Dotfiles
 
-## Installation
+WSL Ubuntu環境向けの開発環境セットアップスクリプトです。
+
+## 🚀 Quick Start
+
+### ワンコマンドでの完全セットアップ
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/bootstrap.sh)
 ```
 
-このコマンドは以下を実行します：
-1. dotfilesリポジトリのクローン
-2. miseのインストールと設定
-3. 開発ツールのインストール（Node.js, Rust, Python等）
-4. Docker/Docker Composeのインストールとセットアップ（WSL2環境用）
-5. VS Code設定の適用
-6. Git設定の適用
-
-### Docker セットアップ
-
-WSL2環境にDocker/Docker Composeを自動的にインストールします。個別にDockerをセットアップする場合：
+または、リポジトリをクローン後：
 
 ```bash
-./setup-docker.sh
+git clone https://github.com/ksera524/dotfiles.git
+cd dotfiles
+./bootstrap.sh
 ```
 
-**注意**: Dockerグループへの追加後は、一度ログアウトして再ログインするか、`newgrp docker`を実行してください。
+## 📦 What's Included
 
-## mise による開発ツール管理
+`bootstrap.sh`は以下のすべてをセットアップします：
+
+- **🔧 開発ツール管理**: [mise](https://mise.jdx.dev/)による統一的なツール管理
+- **🐠 Fish Shell**: モダンなシェル環境とカスタム設定
+- **⭐ Starship**: クロスシェル対応のプロンプト
+- **🐳 Docker & Docker Compose**: コンテナ開発環境
+- **📝 VS Code**: 設定と拡張機能の自動セットアップ
+- **🔄 Git**: ユーザー設定とエイリアス
 
 ### インストールされるツール
 
-`.mise.toml`に定義された開発ツールが`install.sh`で自動的にインストールされます：
+- **言語**: Node.js (LTS), Rust (stable), Python 3.12
+- **CLI**: GitHub CLI, ripgrep, fd, bat, eza, jq, bottom
+- **開発**: TypeScript, Claude Code CLI
+- **コンテナ**: Docker CE, Docker Compose
 
-- **言語ランタイム**: Node.js (LTS), Rust (stable), Python 3.12
-- **CLIツール**: GitHub CLI, ripgrep, fd, bat, eza
-- **コンテナ**: Docker, Docker Compose
+## 📚 Usage
 
-### miseの使い方
+### Dotfilesの更新をpush
 
-```bash
-# インストール済みツールの確認
-mise list
-
-# グローバルにツールをインストール
-mise use --global node@20
-mise use --global rust@1.75
-
-# プロジェクト固有のバージョン設定
-mise use node@18  # プロジェクトの.mise.tomlに保存される
-
-# 特定のツールを更新
-mise upgrade node
-
-# すべてのツールを更新
-mise upgrade --all
-```
-
-### dotfilesの更新をpush
-
-どこからでもdotfilesの変更をpushできるスクリプトが用意されています：
+どこからでもdotfilesの変更をGitHubにpushできます：
 
 ```bash
 # デフォルトメッセージでpush
@@ -66,16 +50,54 @@ dotpush
 dotpush "Add new aliases"
 ```
 
-このコマンドは以下を自動的に実行します：
-1. `~/dotfiles`ディレクトリに移動
-2. 変更をステージング（`git add -A`）
-3. コミットを作成
-4. GitHubにpush
-5. 元のディレクトリに戻る
+### miseでツール管理
 
-## VS Code Settings
+```bash
+# インストール済みツールの確認
+mise list
 
-### RustOwl Extension Colors
+# すべてのツールを更新
+mise upgrade --all
+
+# 特定のツールを更新
+mise upgrade node
+```
+
+## 🔧 Configuration Files
+
+### ディレクトリ構造
+
+```
+dotfiles/
+├── bootstrap.sh        # ワンショットセットアップスクリプト
+├── bash/              # Bash設定
+│   └── bashrc
+├── fish/              # Fish Shell設定
+│   ├── config.fish
+│   ├── functions/
+│   └── conf.d/
+├── git/               # Git設定
+│   ├── gitconfig
+│   └── gitignore_global
+├── starship/          # Starshipプロンプト設定
+│   └── starship.toml
+├── mise/              # mise設定
+│   └── mise.toml
+└── .vscode/           # VS Code設定
+    ├── settings.json
+    └── extensions.json
+```
+
+## 📝 Notes
+
+- **Fish Shell**: デフォルトシェルとして自動設定されます
+- **Git設定**: `gitconfig`と`gitignore_global`をシンボリックリンクで適用
+- **Docker**: WSL2環境用に最適化された設定
+- **VS Code**: ターミナルのデフォルトシェルもFishに設定
+
+## 🦀 RustOwl Extension Colors
+
+VS Code設定に含まれるRustOwl拡張機能のカラースキーム：
 
 | Feature | Color | HSL Value | Description |
 |---------|-------|-----------|-------------|
