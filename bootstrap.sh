@@ -44,9 +44,11 @@ log_info "Environment: $(lsb_release -ds 2>/dev/null || cat /etc/*release | head
 # Clone or Update Dotfiles Repository
 # ============================================================================
 
-if [ "$0" = "bash" ] || [ "$0" = "sh" ]; then
+# Check if script is being piped from curl/wget or run locally
+# When piped, $0 is typically "bash" or "sh", and BASH_SOURCE is empty or equals $0
+if [ -z "${BASH_SOURCE[0]}" ] || [ "${BASH_SOURCE[0]}" = "$0" ] && { [ "$0" = "bash" ] || [ "$0" = "sh" ] || [ "$0" = "-bash" ] || [ -z "$0" ]; }; then
   # Script is being run via curl | bash
-  log_info "Cloning dotfiles repository..."
+  log_info "Running from curl/wget. Cloning dotfiles repository..."
   cd ~
   if [ -d dotfiles ]; then
     log_info "Dotfiles directory exists. Updating..."
@@ -58,7 +60,7 @@ if [ "$0" = "bash" ] || [ "$0" = "sh" ]; then
   fi
 else
   # Script is being run locally
-  DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+  DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
   cd "$DOTFILES_DIR"
   log_info "Using local dotfiles at: $DOTFILES_DIR"
 fi
