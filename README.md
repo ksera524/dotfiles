@@ -1,14 +1,5 @@
 # Dotfiles
 
-WSL Ubuntu環境向けのdotfilesリポジトリです。[mise](https://mise.jdx.dev/)を使用して各種開発ツールを管理します。
-
-## 特徴
-
-- 🔧 **mise**による統一的なツール管理
-- 🐧 WSL Ubuntu環境に最適化
-- 🐳 Docker環境の自動セットアップ
-- 🎨 VS Code設定の自動適用
-
 ## Installation
 
 ```bash
@@ -42,19 +33,6 @@ WSL2環境にDocker/Docker Composeを自動的にインストールします。�
 - **言語ランタイム**: Node.js (LTS), Rust (stable), Python 3.12
 - **CLIツール**: GitHub CLI, ripgrep, fd, bat, eza
 - **コンテナ**: Docker, Docker Compose
-
-### ツールの追加・管理
-
-```bash
-# .mise.tomlを編集して新しいツールを追加
-vi .mise.toml
-
-# 追加したツールをインストール
-mise install
-
-# すべてのツールを最新版に更新
-./update-tools.sh
-```
 
 ### miseの使い方
 
@@ -99,8 +77,6 @@ dotpush "Add new aliases"
 
 ### RustOwl Extension Colors
 
-The following color scheme is configured for the RustOwl extension to provide clear visual distinction for Rust's ownership and borrowing system. Colors are chosen for accessibility, including for color-blind users:
-
 | Feature | Color | HSL Value | Description |
 |---------|-------|-----------|-------------|
 | **Immutable Borrow** | Cyan (明るい青) | `hsla(200, 100%, 50%, 0.8)` | 不変借用を示す下線 |
@@ -108,5 +84,3 @@ The following color scheme is configured for the RustOwl extension to provide cl
 | **Move/Call** | Yellow (黄色) | `hsla(60, 100%, 50%, 0.8)` | ムーブ/関数呼び出しを示す下線 |
 | **Mutable Borrow** | Red (赤) | `hsla(0, 100%, 50%, 0.8)` | 可変借用を示す下線 |
 | **Outlive** | Gray (灰色) | `hsla(0, 0%, 50%, 0.8)` | ライフタイム制約を示す下線 |
-
-これらの色は色覚異常の方にも識別しやすいよう、明度差と色相差を大きく設定しています。
