@@ -31,7 +31,8 @@ sudo apt install -y \
   lld \
   ca-certificates \
   gnupg \
-  lsb-release
+  lsb-release \
+  fish
 
 echo "🔧 Installing mise (polyglot runtime manager)..."
 if ! command -v mise &> /dev/null; then
@@ -66,6 +67,36 @@ if [ -f "$HOME/dotfiles/mise/mise.toml" ]; then
   fi
   ln -s "$HOME/dotfiles/mise/mise.toml" "$HOME/.mise.toml"
   echo "  ✓ mise configuration linked"
+fi
+
+# starship設定ファイルをシンボリックリンクで配置
+if [ -f "$HOME/dotfiles/starship/starship.toml" ]; then
+  # .configディレクトリがなければ作成
+  mkdir -p "$HOME/.config"
+
+  # 既存のファイルやリンクがあれば削除
+  if [ -e "$HOME/.config/starship.toml" ] || [ -L "$HOME/.config/starship.toml" ]; then
+    rm -f "$HOME/.config/starship.toml"
+  fi
+  ln -s "$HOME/dotfiles/starship/starship.toml" "$HOME/.config/starship.toml"
+  echo "  ✓ starship configuration linked"
+fi
+
+# fish設定ファイルをシンボリックリンクで配置
+if [ -d "$HOME/dotfiles/fish" ]; then
+  # .config/fishディレクトリがなければ作成
+  mkdir -p "$HOME/.config/fish"
+
+  # 既存のconfig.fishがあればバックアップ
+  if [ -f "$HOME/.config/fish/config.fish" ] && [ ! -L "$HOME/.config/fish/config.fish" ]; then
+    mv "$HOME/.config/fish/config.fish" "$HOME/.config/fish/config.fish.backup"
+  fi
+
+  # シンボリックリンクを作成
+  ln -sf "$HOME/dotfiles/fish/config.fish" "$HOME/.config/fish/config.fish"
+  ln -sf "$HOME/dotfiles/fish/functions" "$HOME/.config/fish/functions"
+  ln -sf "$HOME/dotfiles/fish/conf.d" "$HOME/.config/fish/conf.d"
+  echo "  ✓ fish configuration linked"
 fi
 
 echo "📦 Installing tools via mise..."
@@ -114,6 +145,8 @@ fi
 
 echo "✅ WSL Ubuntu setup complete!"
 echo "📋 Please restart your terminal or run: source ~/.bashrc"
+echo "🐠 To use fish shell, run: fish"
+echo "   To set fish as default shell, run: chsh -s $(which fish)"
 echo ""
 echo "📊 Installed versions:"
 if command -v mise &> /dev/null; then

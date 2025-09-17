@@ -1,0 +1,139 @@
+# Starship Configuration
+
+
+# プロンプトの右側
+right_format = """$time"""
+
+# コマンド実行時間の表示
+[cmd_duration]
+min_time = 2_000
+format = "took [$duration]($style) "
+style = "bold yellow"
+
+# ユーザー名
+[username]
+style_user = "bold blue"
+style_root = "bold red"
+format = "[$user]($style)@"
+disabled = false
+show_always = true
+
+# ディレクトリ
+[directory]
+truncation_length = 100
+truncate_to_repo = false
+
+
+# Git ブランチ
+[git_branch]
+symbol = " "
+format = "on [$symbol$branch]($style) "
+style = "bold purple"
+truncation_length = 10
+
+# Git ステータス
+[git_status]
+disabled = true
+
+# 文字（プロンプトの末尾）
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vicmd_symbol = "[❮](bold green)"
+
+# 時刻
+[time]
+disabled = false
+format = '[$time]($style)'
+style = "bold yellow"
+time_format = "%H:%M"
+
+# Rust
+[rust]
+symbol = "🦀 "
+format = "via [$symbol($version )]($style)"
+style = "bold red"
+
+# Node.js
+[nodejs]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+style = "bold green"
+detect_files = ["package.json", ".node-version", ".nvmrc"]
+detect_folders = ["node_modules"]
+
+# Python
+[python]
+symbol = "🐍 "
+format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+style = "bold yellow"
+pyenv_version_name = true
+
+# Docker
+[docker_context]
+symbol = "🐳 "
+format = "via [$symbol$context]($style) "
+style = "bold blue"
+only_with_files = true
+detect_files = ["docker-compose.yml", "docker-compose.yaml", "Dockerfile"]
+
+# パッケージのバージョン
+[package]
+disabled = false
+symbol = "📦 "
+style = "bold 208"
+format = "via [$symbol$version]($style) "
+
+# メモリ使用量
+[memory_usage]
+disabled = true
+threshold = 75
+symbol = "🧠 "
+format = "via $symbol[$ram_pct]($style) "
+style = "bold dimmed white"
+
+# バッテリー
+[battery]
+full_symbol = "🔋"
+charging_symbol = "⚡️"
+discharging_symbol = "💀"
+unknown_symbol = "🤷"
+empty_symbol = "🪫"
+
+[[battery.display]]
+threshold = 10
+style = "bold red"
+
+[[battery.display]]
+threshold = 30
+style = "bold yellow"
+
+# AWS
+[aws]
+format = 'on [$symbol($profile )(\($region\) )]($style)'
+style = "bold yellow"
+symbol = "☁️  "
+
+# Kubernetes
+[kubernetes]
+format = 'on [$symbol$context( \($namespace\))]($style) '
+symbol = "☸ "
+style = "bold blue"
+disabled = false
+
+# Terraform
+[terraform]
+format = "via [$symbol$workspace]($style) "
+symbol = "💠 "
+style = "bold purple"
+
+# 改行
+[line_break]
+disabled = false
+
+# ジョブ
+[jobs]
+symbol = "+"
+style = "bold blue"
+number_threshold = 1
+format = "[$symbol$number]($style) "

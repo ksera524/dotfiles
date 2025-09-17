@@ -2,7 +2,17 @@
   "editor.tabSize": 2,
   "files.trimTrailingWhitespace": true,
   "rust-analyzer.checkOnSave.command": "clippy",
-  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.linux": "fish",
+  "terminal.integrated.profiles.linux": {
+    "fish": {
+      "path": "/usr/bin/fish",
+      "icon": "terminal-linux"
+    },
+    "bash": {
+      "path": "/bin/bash",
+      "icon": "terminal-bash"
+    }
+  },
   "rustowl.immutableBorrowColor": "hsla(200, 100%, 50%, 0.8)",
   "rustowl.lifetimeColor": "hsla(0, 0%, 100%, 0.8)",
   "rustowl.moveCallColor": "hsla(60, 100%, 50%, 0.8)",
