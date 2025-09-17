@@ -75,3 +75,5 @@ alias cc='claude --dangerously-skip-permissions'
 
 # Add mise shims to PATH
 export PATH="$HOME/.local/share/mise/shims:$PATH"
+
+eval "$(starship init bash)"
