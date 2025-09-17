@@ -23,11 +23,20 @@ if grep -qi microsoft /proc/version; then
   echo "🐧 Detected WSL environment"
 
   # WSL環境では code コマンドが利用可能（VS Code Server経由）
-  if command -v code &> /dev/null; then
-    echo "✓ VS Code command found in WSL"
+  # VS Code Serverのcodeコマンドを探す（Windows側のcodeは除外）
+  CODE_CMD=""
+  for cmd in $(type -a code 2>/dev/null | awk '{print $NF}'); do
+    if [[ "$cmd" == *".vscode-server"* ]]; then
+      CODE_CMD="$cmd"
+      break
+    fi
+  done
+
+  if [ -n "$CODE_CMD" ]; then
+    echo "✓ VS Code Server command found in WSL: $CODE_CMD"
 
     # 現在インストールされている拡張機能を取得
-    INSTALLED_EXTENSIONS=$(code --list-extensions 2>/dev/null | tail -n +2 || true)
+    INSTALLED_EXTENSIONS=$("$CODE_CMD" --list-extensions 2>/dev/null | tail -n +2 || true)
 
     # 推奨拡張機能をインストール
     jq -r '.recommendations[]' .vscode/extensions.json | while read -r ext; do
@@ -36,7 +45,7 @@ if grep -qi microsoft /proc/version; then
         echo "✓ Already installed: $ext"
       else
         echo "➡️  Installing extension: $ext"
-        if ! code --install-extension "$ext" --force 2>&1; then
+        if ! "$CODE_CMD" --install-extension "$ext" --force 2>&1; then
           echo "  ⚠️  Failed to install: $ext"
         fi
       fi
