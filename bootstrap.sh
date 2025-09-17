@@ -18,6 +18,33 @@ log_success() { echo -e "${GREEN}✅ $1${NC}"; }
 log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
 log_error() { echo -e "${RED}❌ $1${NC}"; }
 
+# Parse arguments
+DRY_RUN=false
+SKIP_WSL_CHECK=false
+for arg in "$@"; do
+  case $arg in
+    --help|-h)
+      echo "Usage: $0 [OPTIONS]"
+      echo ""
+      echo "Bootstrap script for WSL Ubuntu development environment"
+      echo ""
+      echo "Options:"
+      echo "  --help, -h       Show this help message"
+      echo "  --dry-run        Run in dry-run mode (no actual changes)"
+      echo "  --skip-wsl-check Skip WSL environment check"
+      echo ""
+      exit 0
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      log_info "Running in DRY-RUN mode (no actual changes will be made)"
+      ;;
+    --skip-wsl-check)
+      SKIP_WSL_CHECK=true
+      ;;
+  esac
+done
+
 # ============================================================================
 # Initial Setup
 # ============================================================================
@@ -29,12 +56,16 @@ echo "╚═══════════════════════�
 echo ""
 
 # WSL環境チェック
-if ! grep -qi microsoft /proc/version; then
+if [ "$SKIP_WSL_CHECK" = false ] && ! grep -qi microsoft /proc/version; then
   log_warning "This script is optimized for WSL Ubuntu environment."
-  read -p "Continue anyway? (y/n): " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    exit 1
+  if [ "$DRY_RUN" = true ] || [ -n "$CI" ]; then
+    log_info "Skipping WSL check in CI/dry-run mode"
+  else
+    read -p "Continue anyway? (y/n): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      exit 1
+    fi
   fi
 fi
 
@@ -46,7 +77,7 @@ log_info "Environment: $(lsb_release -ds 2>/dev/null || cat /etc/*release | head
 
 # Check if script is being piped from curl/wget or run locally
 # When piped, $0 is typically "bash" or "sh", and BASH_SOURCE is empty or equals $0
-if [ -z "${BASH_SOURCE[0]}" ] || [ "${BASH_SOURCE[0]}" = "$0" ] && { [ "$0" = "bash" ] || [ "$0" = "sh" ] || [ "$0" = "-bash" ] || [ -z "$0" ]; }; then
+if [ "$DRY_RUN" = false ] && { [ -z "${BASH_SOURCE[0]}" ] || [ "${BASH_SOURCE[0]}" = "$0" ] && { [ "$0" = "bash" ] || [ "$0" = "sh" ] || [ "$0" = "-bash" ] || [ -z "$0" ]; }; }; then
   # Script is being run via curl | bash
   log_info "Running from curl/wget. Cloning dotfiles repository..."
   cd ~
@@ -64,7 +95,7 @@ if [ -z "${BASH_SOURCE[0]}" ] || [ "${BASH_SOURCE[0]}" = "$0" ] && { [ "$0" = "b
   exec bash ./bootstrap.sh "$@"
   exit $?
 else
-  # Script is being run locally
+  # Script is being run locally or in dry-run mode
   DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
   cd "$DOTFILES_DIR"
   log_info "Using local dotfiles at: $DOTFILES_DIR"
@@ -73,6 +104,13 @@ fi
 # ============================================================================
 # System Packages Update
 # ============================================================================
+
+if [ "$DRY_RUN" = true ]; then
+  log_info "[DRY-RUN] Would update packages"
+  log_info "[DRY-RUN] Would install system dependencies"
+  log_success "Dry-run completed successfully"
+  exit 0
+fi
 
 log_info "Updating packages..."
 sudo apt update && sudo apt upgrade -y
