@@ -58,6 +58,11 @@ if [ -z "${BASH_SOURCE[0]}" ] || [ "${BASH_SOURCE[0]}" = "$0" ] && { [ "$0" = "b
     git clone https://github.com/ksera524/dotfiles.git
     cd dotfiles
   fi
+
+  # Re-execute the script from the cloned repository
+  log_info "Re-executing bootstrap.sh from cloned repository..."
+  exec bash ./bootstrap.sh "$@"
+  exit $?
 else
   # Script is being run locally
   DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
