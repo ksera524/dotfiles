@@ -42,6 +42,12 @@ if [ -f "$HOME/.local/bin/mise" ]; then
   eval "$(~/.local/bin/mise activate bash)"
   echo "✓ mise activated for current session"
 
+  # mise設定ファイルのシンボリックリンクを作成
+  echo "🔗 Creating mise config symlink..."
+  mkdir -p ~/.config/mise
+  ln -sf ~/.mise.toml ~/.config/mise/config.toml
+  echo "✓ Symlink created: ~/.config/mise/config.toml -> ~/.mise.toml"
+
   # インストールされたツールを表示
   echo ""
   echo "📊 Installed tools:"
