@@ -49,7 +49,7 @@ alias dotfiles-install='cd ~/dotfiles && bash install.sh'
 alias dotfiles-update='cd ~/dotfiles && bash update-tools.sh'
 alias dotfiles-vscode='cd ~/dotfiles && bash apply-vscode-config.sh'
 alias dotfiles-git='cd ~/dotfiles && bash setup-git.sh'
-alias dotfiles-bootstrap='bash <(curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/bootstrap.sh)'
+alias dotfiles-bootstrap='cd ~/dotfiles && ./bootstrap.sh'
 alias mise-status='mise list --current'
 
 # dotfilesの更新をpushする関数

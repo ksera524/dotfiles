@@ -72,34 +72,12 @@ fi
 log_info "Environment: $(lsb_release -ds 2>/dev/null || cat /etc/*release | head -n1)"
 
 # ============================================================================
-# Clone or Update Dotfiles Repository
+# Setup Dotfiles Directory
 # ============================================================================
 
-# Check if script is being piped from curl/wget or run locally
-# When piped, $0 is typically "bash" or "sh", and BASH_SOURCE is empty or equals $0
-if [ "$DRY_RUN" = false ] && { [ -z "${BASH_SOURCE[0]}" ] || [ "${BASH_SOURCE[0]}" = "$0" ] && { [ "$0" = "bash" ] || [ "$0" = "sh" ] || [ "$0" = "-bash" ] || [ -z "$0" ]; }; }; then
-  # Script is being run via curl | bash
-  log_info "Running from curl/wget. Cloning dotfiles repository..."
-  cd ~
-  if [ -d dotfiles ]; then
-    log_info "Dotfiles directory exists. Updating..."
-    cd dotfiles
-    git pull origin main
-  else
-    git clone https://github.com/ksera524/dotfiles.git
-    cd dotfiles
-  fi
-
-  # Re-execute the script from the cloned repository
-  log_info "Re-executing bootstrap.sh from cloned repository..."
-  exec bash ./bootstrap.sh "$@"
-  exit $?
-else
-  # Script is being run locally or in dry-run mode
-  DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-  cd "$DOTFILES_DIR"
-  log_info "Using local dotfiles at: $DOTFILES_DIR"
-fi
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+cd "$DOTFILES_DIR" || exit 1
+log_info "Using dotfiles at: $DOTFILES_DIR"
 
 # ============================================================================
 # System Packages Update
@@ -217,8 +195,8 @@ if command -v mise &> /dev/null; then
   log_success "All mise tools installed"
 fi
 
-# Only source bashrc if we're in an interactive shell, not when piped
-if [ -t 0 ] && [ -f ~/.bashrc ]; then
+# Source bashrc if it exists
+if [ -f ~/.bashrc ]; then
   # shellcheck source=/dev/null
   source ~/.bashrc
 fi
