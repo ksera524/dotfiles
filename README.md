@@ -4,13 +4,7 @@ WSL Ubuntu環境向けの開発環境セットアップスクリプトです。
 
 ## 🚀 Quick Start
 
-### ワンコマンドでの完全セットアップ
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/bootstrap.sh)
-```
-
-または、リポジトリをクローン後：
+### セットアップ
 
 ```bash
 git clone https://github.com/ksera524/dotfiles.git
