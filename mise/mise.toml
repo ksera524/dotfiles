@@ -3,6 +3,7 @@
 node = "lts"
 rust = "stable"
 python = "3.12"
+go = "1.25.5"
 
 # CLI tools (verified in mise registry)
 gh = "latest"        # GitHub CLI
@@ -16,6 +17,7 @@ bottom = "latest"    # System and process monitor (htop alternative)
 "npm:typescript" = "latest"
 "npm:@anthropic-ai/claude-code" = "latest"
 starship = "latest"
+hugo = "latest"
 
 [env]
 PATH = "./node_modules/.bin:$PATH"
