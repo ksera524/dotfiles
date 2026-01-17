@@ -21,6 +21,7 @@ log_error() { echo -e "${RED}❌ $1${NC}"; }
 # Parse arguments
 DRY_RUN=false
 SKIP_WSL_CHECK=false
+CI_MODE=false
 for arg in "$@"; do
   case $arg in
     --help|-h)
@@ -32,6 +33,7 @@ for arg in "$@"; do
       echo "  --help, -h       Show this help message"
       echo "  --dry-run        Run in dry-run mode (no actual changes)"
       echo "  --skip-wsl-check Skip WSL environment check"
+      echo "  --ci             Run in CI mode (skip WSL-only steps)"
       echo ""
       exit 0
       ;;
@@ -40,6 +42,10 @@ for arg in "$@"; do
       log_info "Running in DRY-RUN mode (no actual changes will be made)"
       ;;
     --skip-wsl-check)
+      SKIP_WSL_CHECK=true
+      ;;
+    --ci)
+      CI_MODE=true
       SKIP_WSL_CHECK=true
       ;;
   esac
@@ -206,7 +212,9 @@ fi
 # ============================================================================
 
 log_info "Installing Docker..."
-if ! command -v docker &> /dev/null; then
+if [ "$CI_MODE" = true ]; then
+  log_info "Skipping Docker install in CI mode"
+elif ! command -v docker &> /dev/null; then
   # Docker公式GPGキーを追加
   sudo mkdir -m 0755 -p /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -253,7 +261,9 @@ if [ -f "$HOME/dotfiles/.vscode/settings.json" ]; then
 fi
 
 # WSL環境でのVS Code拡張機能のインストール
-if grep -qi microsoft /proc/version && [ -f "$HOME/dotfiles/.vscode/extensions.json" ]; then
+if [ "$CI_MODE" = true ]; then
+  log_info "Skipping VS Code extensions install in CI mode"
+elif grep -qi microsoft /proc/version && [ -f "$HOME/dotfiles/.vscode/extensions.json" ]; then
   # VS Code Serverのcodeコマンドを探す
   CODE_CMD=""
   for cmd in $(type -a code 2>/dev/null | awk '{print $NF}'); do
@@ -291,15 +301,20 @@ log_info "Setting up Fish shell as default..."
 # Add fish to valid shells
 FISH_PATH=$(which fish)
 if [ -n "$FISH_PATH" ]; then
-  if ! grep -q "$FISH_PATH" /etc/shells; then
+  if [ "$CI_MODE" = true ]; then
+    log_info "Skipping default shell change in CI mode"
+    SHELL_MSG=""
+  elif ! grep -q "$FISH_PATH" /etc/shells; then
     echo "$FISH_PATH" | sudo tee -a /etc/shells > /dev/null
     log_success "Fish added to valid shells"
   fi
 
   # Set fish as default shell
-  chsh -s "$FISH_PATH"
-  log_success "Fish set as default shell"
-  SHELL_MSG="🐠 Fish is now your default shell. Please log out and back in to apply."
+  if [ "$CI_MODE" = false ]; then
+    chsh -s "$FISH_PATH"
+    log_success "Fish set as default shell"
+    SHELL_MSG="🐠 Fish is now your default shell. Please log out and back in to apply."
+  fi
 else
   log_error "Fish installation failed"
   SHELL_MSG=""
