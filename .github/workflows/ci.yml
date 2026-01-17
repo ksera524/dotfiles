@@ -11,5 +11,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Link dotfiles into home
+        run: |
+          if [ ! -e "$HOME/dotfiles" ]; then
+            ln -s "$GITHUB_WORKSPACE" "$HOME/dotfiles"
+          fi
+
       - name: Run bootstrap in CI mode
         run: ./bootstrap.sh --ci
+
+      - name: Verify symlinks
+        run: |
+          set -euo pipefail
+          test -L "$HOME/.bashrc"
+          test -L "$HOME/.gitconfig"
+          test -L "$HOME/.gitignore_global"
+          test -L "$HOME/.mise.toml"
+          test -L "$HOME/.config/fish/config.fish"
+          test -L "$HOME/.config/starship.toml"
+
+      - name: Verify tools installed via mise
+        run: |
+          set -euo pipefail
+          "$HOME/.local/bin/mise" list --current
+          export PATH="$HOME/.local/share/mise/shims:$PATH"
+          node --version
+          python --version
+          rustc --version
+          go version
+          rg --version
+          jq --version
+          starship --version
+          tsc --version
+
+      - name: Verify fish shell
+        run: |
+          set -euo pipefail
+          fish --version
+          fish -c 'echo ok'
