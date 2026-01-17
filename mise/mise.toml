@@ -16,6 +16,7 @@ bottom = "latest"    # System and process monitor (htop alternative)
 
 "npm:typescript" = "latest"
 "npm:@anthropic-ai/claude-code" = "latest"
+"npm:@openai/codex" = "latest"
 starship = "latest"
 hugo = "latest"
 
