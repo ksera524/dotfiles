@@ -203,8 +203,12 @@ fi
 
 # Source bashrc if it exists
 if [ -f ~/.bashrc ]; then
-  # shellcheck source=/dev/null
-  source ~/.bashrc
+  if [ "$CI_MODE" = true ]; then
+    log_info "Skipping .bashrc sourcing in CI mode"
+  else
+    # shellcheck source=/dev/null
+    source ~/.bashrc
+  fi
 fi
 
 # ============================================================================
