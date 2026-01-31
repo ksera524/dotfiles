@@ -85,6 +85,51 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 cd "$DOTFILES_DIR" || exit 1
 log_info "Using dotfiles at: $DOTFILES_DIR"
 
+# Move dotfiles into ghq root if possible
+GHQ_ROOT=$(git config --global --get ghq.root 2>/dev/null || true)
+if [ -z "$GHQ_ROOT" ]; then
+  GHQ_ROOT="$HOME/src"
+fi
+GHQ_ROOT="${GHQ_ROOT/#\~/$HOME}"
+ORIGIN_URL=$(git -C "$DOTFILES_DIR" config --get remote.origin.url 2>/dev/null || true)
+if [ -n "$ORIGIN_URL" ]; then
+  GHQ_HOST=""
+  GHQ_PATH=""
+  if [[ "$ORIGIN_URL" =~ ^git@([^:]+):(.+)$ ]]; then
+    GHQ_HOST="${BASH_REMATCH[1]}"
+    GHQ_PATH="${BASH_REMATCH[2]}"
+  elif [[ "$ORIGIN_URL" =~ ^https?://([^/]+)/(.+)$ ]]; then
+    GHQ_HOST="${BASH_REMATCH[1]}"
+    GHQ_PATH="${BASH_REMATCH[2]}"
+  fi
+
+  if [ -n "$GHQ_HOST" ] && [ -n "$GHQ_PATH" ]; then
+    GHQ_PATH="${GHQ_PATH%.git}"
+    GHQ_TARGET="$GHQ_ROOT/$GHQ_HOST/$GHQ_PATH"
+    if [ "$DOTFILES_DIR" != "$GHQ_TARGET" ]; then
+      if [ -d "$GHQ_TARGET/.git" ]; then
+        TARGET_ORIGIN=$(git -C "$GHQ_TARGET" config --get remote.origin.url 2>/dev/null || true)
+        if [ "$TARGET_ORIGIN" = "$ORIGIN_URL" ]; then
+          log_info "Using existing ghq repo at: $GHQ_TARGET"
+          ln -sfn "$GHQ_TARGET" "$HOME/dotfiles"
+          DOTFILES_DIR="$GHQ_TARGET"
+          cd "$DOTFILES_DIR" || exit 1
+        else
+          log_warning "ghq target exists with different remote: $GHQ_TARGET"
+        fi
+      else
+        log_info "Relocating dotfiles into ghq root..."
+        mkdir -p "$(dirname "$GHQ_TARGET")"
+        mv "$DOTFILES_DIR" "$GHQ_TARGET"
+        ln -sfn "$GHQ_TARGET" "$HOME/dotfiles"
+        DOTFILES_DIR="$GHQ_TARGET"
+        cd "$DOTFILES_DIR" || exit 1
+        log_success "dotfiles moved to $DOTFILES_DIR"
+      fi
+    fi
+  fi
+fi
+
 # ============================================================================
 # System Packages Update
 # ============================================================================
