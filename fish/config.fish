@@ -23,10 +23,18 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 
 # Modern CLI aliases
-alias ls='exa'
+alias ls='eza'
 alias cat='bat'
 alias find='fd'
 alias grep='rg'
+alias gq='ghq-cd'
+
+function ghq-cd
+    set -l dest (ghq list -p | fzf --prompt='ghq> ' --height=40% --reverse)
+    if test -n "$dest"
+        cd "$dest"
+    end
+end
 
 # Git aliases
 alias gs='git status'

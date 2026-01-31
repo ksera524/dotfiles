@@ -13,6 +13,8 @@ bat = "latest"       # Better cat with syntax highlighting
 eza = "latest"       # Modern ls replacement
 jq = "latest"        # JSON processor
 bottom = "latest"    # System and process monitor (htop alternative)
+ghq = "latest"       # Repository manager
+fzf = "latest"       # Fuzzy finder
 "github:sst/opencode" = "latest"
 
 #npm

@@ -31,10 +31,19 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 
 # modern CLI aliases
-alias ls='exa'
+alias ls='eza'
 alias cat='bat'
 alias find='fd'
 alias grep='rg'
+alias gq='ghq-cd'
+
+ghq-cd() {
+    local dest
+    dest="$(ghq list -p | fzf --prompt='ghq> ' --height=40% --reverse)"
+    if [ -n "$dest" ]; then
+        cd "$dest"
+    fi
+}
 
 # Gitエイリアス
 alias gs='git status'
