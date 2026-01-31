@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+IFS=$'\n\t'
 
 # ============================================================================
 # Bootstrap Script for WSL Ubuntu Environment
@@ -13,15 +14,46 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
-log_success() { echo -e "${GREEN}✅ $1${NC}"; }
-log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
-log_error() { echo -e "${RED}❌ $1${NC}"; }
+log_info() { printf '%b\n' "${BLUE}ℹ️  $1${NC}"; }
+log_success() { printf '%b\n' "${GREEN}✅ $1${NC}"; }
+log_warning() { printf '%b\n' "${YELLOW}⚠️  $1${NC}"; }
+log_error() { printf '%b\n' "${RED}❌ $1${NC}"; }
+
+TMP_FILES=()
+cleanup_tmp() {
+  for tmp_file in "${TMP_FILES[@]:-}"; do
+    [ -f "$tmp_file" ] && rm -f "$tmp_file"
+  done
+}
+trap cleanup_tmp EXIT
+
+is_wsl() {
+  grep -qi microsoft /proc/version 2>/dev/null || grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null
+}
+
+backup_path() {
+  local target=$1
+  local timestamp
+  timestamp=$(date +%Y%m%d%H%M%S)
+  mv "$target" "${target}.backup.${timestamp}"
+}
+
+link_path() {
+  local src=$1
+  local dest=$2
+
+  mkdir -p "$(dirname "$dest")"
+  if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+    backup_path "$dest"
+  fi
+  ln -sfn "$src" "$dest"
+}
 
 # Parse arguments
 DRY_RUN=false
 SKIP_WSL_CHECK=false
 CI_MODE=false
+SHELL_MSG=""
 for arg in "$@"; do
   case $arg in
     --help|-h)
@@ -51,20 +83,25 @@ for arg in "$@"; do
   esac
 done
 
+if [ -n "${CI:-}" ]; then
+  CI_MODE=true
+  SKIP_WSL_CHECK=true
+fi
+
 # ============================================================================
 # Initial Setup
 # ============================================================================
 
-echo ""
-echo "╔════════════════════════════════════════════════════════════╗"
-echo "║     🚀 WSL Ubuntu Development Environment Setup            ║"
-echo "╚════════════════════════════════════════════════════════════╝"
-echo ""
+printf '\n'
+printf '%s\n' "╔════════════════════════════════════════════════════════════╗"
+printf '%s\n' "║     🚀 WSL Ubuntu Development Environment Setup            ║"
+printf '%s\n' "╚════════════════════════════════════════════════════════════╝"
+printf '\n'
 
 # WSL環境チェック
-if [ "$SKIP_WSL_CHECK" = false ] && ! grep -qi microsoft /proc/version; then
+if [ "$SKIP_WSL_CHECK" = false ] && ! is_wsl; then
   log_warning "This script is optimized for WSL Ubuntu environment."
-  if [ "$DRY_RUN" = true ] || [ -n "$CI" ]; then
+  if [ "$DRY_RUN" = true ] || [ "$CI_MODE" = true ]; then
     log_info "Skipping WSL check in CI/dry-run mode"
   else
     read -p "Continue anyway? (y/n): " -n 1 -r
@@ -142,10 +179,11 @@ if [ "$DRY_RUN" = true ]; then
 fi
 
 log_info "Updating packages..."
-sudo apt update && sudo apt upgrade -y
+sudo env DEBIAN_FRONTEND=noninteractive apt-get update
+sudo env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 
 log_info "Installing system dependencies..."
-sudo apt install -y \
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
   curl \
   git \
   unzip \
@@ -168,15 +206,20 @@ log_info "Installing mise..."
 if ! command -v mise &> /dev/null; then
   # Download and install mise without piping to avoid nested pipes
   MISE_INSTALL_SCRIPT=$(mktemp)
+  TMP_FILES+=("$MISE_INSTALL_SCRIPT")
   curl -fsSL https://mise.run -o "$MISE_INSTALL_SCRIPT"
   sh "$MISE_INSTALL_SCRIPT"
-  rm -f "$MISE_INSTALL_SCRIPT"
   export PATH="$HOME/.local/bin:$PATH"
   # Don't use eval with command substitution in piped context
   if [ -f "$HOME/.local/bin/mise" ]; then
     "$HOME/.local/bin/mise" activate bash >> "$HOME/.bashrc.mise.tmp"
-    cat "$HOME/.bashrc.mise.tmp" >> "$HOME/.bashrc"
-    rm -f "$HOME/.bashrc.mise.tmp"
+    TMP_FILES+=("$HOME/.bashrc.mise.tmp")
+    if [ ! -f "$HOME/.bashrc" ]; then
+      touch "$HOME/.bashrc"
+    fi
+    if ! grep -Fq "mise activate bash" "$HOME/.bashrc"; then
+      cat "$HOME/.bashrc.mise.tmp" >> "$HOME/.bashrc"
+    fi
   fi
   log_success "mise installed"
 else
@@ -191,48 +234,40 @@ log_info "Creating symbolic links..."
 
 # Bash configuration
 if [ -f "$HOME/dotfiles/bash/bashrc" ]; then
-  ln -sf "$HOME/dotfiles/bash/bashrc" "$HOME/.bashrc"
+  link_path "$HOME/dotfiles/bash/bashrc" "$HOME/.bashrc"
   log_success ".bashrc linked"
 fi
 
 # Mise configuration
 if [ -f "$HOME/dotfiles/mise/mise.toml" ]; then
-  ln -sf "$HOME/dotfiles/mise/mise.toml" "$HOME/.mise.toml"
+  link_path "$HOME/dotfiles/mise/mise.toml" "$HOME/.mise.toml"
   log_success "mise configuration linked"
 fi
 
 # Starship configuration
 if [ -f "$HOME/dotfiles/starship/starship.toml" ]; then
   mkdir -p "$HOME/.config"
-  ln -sf "$HOME/dotfiles/starship/starship.toml" "$HOME/.config/starship.toml"
+  link_path "$HOME/dotfiles/starship/starship.toml" "$HOME/.config/starship.toml"
   log_success "starship configuration linked"
 fi
 
 # Fish configuration
 if [ -d "$HOME/dotfiles/fish" ]; then
   mkdir -p "$HOME/.config/fish"
-  if [ -f "$HOME/.config/fish/config.fish" ] && [ ! -L "$HOME/.config/fish/config.fish" ]; then
-    mv "$HOME/.config/fish/config.fish" "$HOME/.config/fish/config.fish.backup"
-  fi
-  ln -sf "$HOME/dotfiles/fish/config.fish" "$HOME/.config/fish/config.fish"
-
-  # Remove existing directories/links before creating symlinks
-  [ -e "$HOME/.config/fish/functions" ] && rm -rf "$HOME/.config/fish/functions"
-  [ -e "$HOME/.config/fish/conf.d" ] && rm -rf "$HOME/.config/fish/conf.d"
-
-  ln -sf "$HOME/dotfiles/fish/functions" "$HOME/.config/fish/functions"
-  ln -sf "$HOME/dotfiles/fish/conf.d" "$HOME/.config/fish/conf.d"
+  link_path "$HOME/dotfiles/fish/config.fish" "$HOME/.config/fish/config.fish"
+  link_path "$HOME/dotfiles/fish/functions" "$HOME/.config/fish/functions"
+  link_path "$HOME/dotfiles/fish/conf.d" "$HOME/.config/fish/conf.d"
   log_success "fish configuration linked"
 fi
 
 # Git configuration
 if [ -f "$HOME/dotfiles/git/gitconfig" ]; then
-  ln -sf "$HOME/dotfiles/git/gitconfig" "$HOME/.gitconfig"
+  link_path "$HOME/dotfiles/git/gitconfig" "$HOME/.gitconfig"
   log_success "git configuration linked"
 fi
 
 if [ -f "$HOME/dotfiles/git/gitignore_global" ]; then
-  ln -sf "$HOME/dotfiles/git/gitignore_global" "$HOME/.gitignore_global"
+  link_path "$HOME/dotfiles/git/gitignore_global" "$HOME/.gitignore_global"
   log_success "global gitignore linked"
 fi
 
@@ -267,6 +302,7 @@ elif ! command -v docker &> /dev/null; then
   # Docker公式GPGキーを追加
   sudo mkdir -m 0755 -p /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
   # Dockerリポジトリを設定
   echo \
@@ -274,8 +310,8 @@ elif ! command -v docker &> /dev/null; then
     $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
   # Dockerをインストール
-  sudo apt update
-  sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get update
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
   # ユーザーをdockerグループに追加
   sudo groupadd -f docker
@@ -315,7 +351,7 @@ if [ "$CI_MODE" = true ]; then
 elif grep -qi microsoft /proc/version && [ -f "$HOME/dotfiles/.vscode/extensions.json" ]; then
   # VS Code Serverのcodeコマンドを探す
   CODE_CMD=""
-  for cmd in $(type -a code 2>/dev/null | awk '{print $NF}'); do
+  for cmd in $(type -a code 2>/dev/null | awk '{print $NF}' || true); do
     if [[ "$cmd" == *".vscode-server"* ]]; then
       CODE_CMD="$cmd"
       break
@@ -348,11 +384,10 @@ fi
 log_info "Setting up Fish shell as default..."
 
 # Add fish to valid shells
-FISH_PATH=$(which fish)
+FISH_PATH=$(command -v fish || true)
 if [ -n "$FISH_PATH" ]; then
   if [ "$CI_MODE" = true ]; then
     log_info "Skipping default shell change in CI mode"
-    SHELL_MSG=""
   elif ! grep -q "$FISH_PATH" /etc/shells; then
     echo "$FISH_PATH" | sudo tee -a /etc/shells > /dev/null
     log_success "Fish added to valid shells"
@@ -366,18 +401,17 @@ if [ -n "$FISH_PATH" ]; then
   fi
 else
   log_error "Fish installation failed"
-  SHELL_MSG=""
 fi
 
 # ============================================================================
 # Final Steps
 # ============================================================================
 
-echo ""
-echo "╔════════════════════════════════════════════════════════════╗"
-echo "║                  ✨ Setup Complete! ✨                     ║"
-echo "╚════════════════════════════════════════════════════════════╝"
-echo ""
+printf '\n'
+printf '%s\n' "╔════════════════════════════════════════════════════════════╗"
+printf '%s\n' "║                  ✨ Setup Complete! ✨                     ║"
+printf '%s\n' "╚════════════════════════════════════════════════════════════╝"
+printf '\n'
 
 # Display installed versions
 log_info "Installed versions:"
@@ -388,34 +422,12 @@ fi
 [ -x "$(command -v docker)" ] && echo "  • Docker: $(docker --version | cut -d' ' -f3 | cut -d',' -f1)"
 [ -x "$(command -v fish)" ] && echo "  • Fish: $(fish --version 2>&1 | cut -d' ' -f3)"
 
-echo ""
+printf '\n'
 log_info "Next steps:"
 echo "  1. Log out and log back in to apply all changes"
 [ -n "$SHELL_MSG" ] && echo "  2. $SHELL_MSG"
 echo "  3. Verify installation: mise list"
-echo "  4. Push dotfiles changes: dotpush \"your message\""
-echo ""
-
-# Function definitions for current session
-if [ -n "$BASH_VERSION" ]; then
-  cat << 'EOF' >> /tmp/dotfiles_functions.sh
-# Dotfiles management function
-dotpush() {
-    local current_dir=$(pwd)
-    cd ~/dotfiles
-    git add -A
-    if [ -n "$1" ]; then
-        git commit -m "$1"
-    else
-        git commit -m "Update dotfiles"
-    fi
-    git push
-    cd "$current_dir"
-}
-EOF
-  source /tmp/dotfiles_functions.sh
-  rm /tmp/dotfiles_functions.sh
-  log_info "dotpush function available in current session"
-fi
+echo "  4. Push dotfiles changes: git -C ~/dotfiles add -A && git -C ~/dotfiles commit -m \"Update dotfiles\" && git -C ~/dotfiles push"
+printf '\n'
 
 log_success "Happy coding! 🎉"
