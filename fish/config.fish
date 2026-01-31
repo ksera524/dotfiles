@@ -22,6 +22,12 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+# Modern CLI aliases
+alias ls='exa'
+alias cat='bat'
+alias find='fd'
+alias grep='rg'
+
 # Git aliases
 alias gs='git status'
 alias ga='git add'

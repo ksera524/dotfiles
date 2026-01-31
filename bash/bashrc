@@ -30,6 +30,12 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+# modern CLI aliases
+alias ls='exa'
+alias cat='bat'
+alias find='fd'
+alias grep='rg'
+
 # Gitエイリアス
 alias gs='git status'
 alias ga='git add'

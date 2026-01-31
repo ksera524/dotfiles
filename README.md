@@ -51,7 +51,7 @@ dotpush "Add new aliases"
 mise list
 
 # すべてのツールを更新
-mise upgrade --all
+mise upgrade
 
 # 特定のツールを更新
 mise upgrade node
