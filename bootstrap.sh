@@ -7,17 +7,10 @@ IFS=$'\n\t'
 # One-shot setup for development environment with mise, fish, docker, etc.
 # ============================================================================
 
-# Color output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-log_info() { printf '%b\n' "${BLUE}ℹ️  $1${NC}"; }
-log_success() { printf '%b\n' "${GREEN}✅ $1${NC}"; }
-log_warning() { printf '%b\n' "${YELLOW}⚠️  $1${NC}"; }
-log_error() { printf '%b\n' "${RED}❌ $1${NC}"; }
+log_info() { printf '%s\n' "INFO: $1"; }
+log_success() { printf '%s\n' "OK: $1"; }
+log_warning() { printf '%s\n' "WARN: $1"; }
+log_error() { printf '%s\n' "ERROR: $1"; }
 
 TMP_FILES=()
 cleanup_tmp() {
@@ -93,9 +86,7 @@ fi
 # ============================================================================
 
 printf '\n'
-printf '%s\n' "╔════════════════════════════════════════════════════════════╗"
-printf '%s\n' "║     🚀 WSL Ubuntu Development Environment Setup            ║"
-printf '%s\n' "╚════════════════════════════════════════════════════════════╝"
+printf '%s\n' "WSL Ubuntu Development Environment Setup"
 printf '\n'
 
 # WSL環境チェック
@@ -363,9 +354,9 @@ elif grep -qi microsoft /proc/version && [ -f "$HOME/dotfiles/.vscode/extensions
 
     jq -r '.recommendations[]' "$HOME/dotfiles/.vscode/extensions.json" 2>/dev/null | while read -r ext; do
       if echo "$INSTALLED_EXTENSIONS" | grep -qi "^${ext}$"; then
-        echo "  ✓ Already installed: $ext"
+        echo "  Already installed: $ext"
       else
-        echo "  ➡️  Installing: $ext"
+        echo "  Installing: $ext"
         "$CODE_CMD" --install-extension "$ext" --force 2>&1 | grep -v "^WSL:" || true
       fi
     done
@@ -396,7 +387,7 @@ if [ -n "$FISH_PATH" ]; then
   if [ "$CI_MODE" = false ]; then
     chsh -s "$FISH_PATH"
     log_success "Fish set as default shell"
-    SHELL_MSG="🐠 Fish is now your default shell. Please log out and back in to apply."
+    SHELL_MSG="Fish is now your default shell. Please log out and back in to apply."
   fi
 else
   log_error "Fish installation failed"
@@ -407,9 +398,7 @@ fi
 # ============================================================================
 
 printf '\n'
-printf '%s\n' "╔════════════════════════════════════════════════════════════╗"
-printf '%s\n' "║                  ✨ Setup Complete! ✨                     ║"
-printf '%s\n' "╚════════════════════════════════════════════════════════════╝"
+printf '%s\n' "Setup Complete"
 printf '\n'
 
 # Display installed versions
@@ -429,4 +418,4 @@ echo "  3. Verify installation: mise list"
 echo "  4. Push dotfiles changes: git -C ~/dotfiles add -A && git -C ~/dotfiles commit -m \"Update dotfiles\" && git -C ~/dotfiles push"
 printf '\n'
 
-log_success "Happy coding! 🎉"
+log_success "Happy coding!"
