@@ -195,8 +195,7 @@ sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
   ca-certificates \
   gnupg \
   lsb-release \
-  fish \
-  jq
+  fish
 
 # ============================================================================
 # Mise (Polyglot Runtime Manager) Setup

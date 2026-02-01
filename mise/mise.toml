@@ -15,6 +15,7 @@ jq = "latest"        # JSON processor
 bottom = "latest"    # System and process monitor (htop alternative)
 ghq = "latest"       # Repository manager
 fzf = "latest"       # Fuzzy finder
+tmux = "latest"      # Terminal multiplexer
 "github:sst/opencode" = "latest"
 
 #npm
