@@ -105,6 +105,26 @@ fi
 
 log_info "Environment: $(lsb_release -ds 2>/dev/null || cat /etc/*release | head -n1)"
 
+# Ensure WSL interop is enabled for browser launch
+if is_wsl; then
+  if [ -f /etc/wsl.conf ]; then
+    if grep -q '^\[interop\]' /etc/wsl.conf; then
+      if grep -q '^\s*enabled\s*=\s*false' /etc/wsl.conf; then
+        sudo sed -i 's/^\s*enabled\s*=\s*false/enabled = true/' /etc/wsl.conf
+        log_info "Enabled WSL interop in /etc/wsl.conf"
+      fi
+    else
+      sudo tee -a /etc/wsl.conf > /dev/null <<'EOF'
+
+[interop]
+enabled = true
+appendWindowsPath = true
+EOF
+      log_info "Added WSL interop config to /etc/wsl.conf"
+    fi
+  fi
+fi
+
 # ============================================================================
 # Setup Dotfiles Directory
 # ============================================================================
@@ -186,7 +206,8 @@ sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
   ca-certificates \
   gnupg \
   lsb-release \
-  fish
+  fish \
+  wslu
 
 # ============================================================================
 # Mise (Polyglot Runtime Manager) Setup
