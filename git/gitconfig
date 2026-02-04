@@ -63,7 +63,7 @@
 	contributors = shortlog --summary --numbered
 
 [credential]
-	helper = cache --timeout=3600
+	helper = gh
 
 [help]
 	autocorrect = 1
