@@ -63,7 +63,7 @@
 	contributors = shortlog --summary --numbered
 
 [credential]
-	helper = gh
+	helper = !gh auth git-credential
 
 [help]
 	autocorrect = 1
