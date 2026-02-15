@@ -99,6 +99,11 @@ setup_dotfiles_dir() {
   cd "$DOTFILES_DIR" || exit 1
   log_info "Using dotfiles at: $DOTFILES_DIR"
 
+  if [ "${CI_MODE:-false}" = true ]; then
+    log_info "Skipping dotfiles relocation in CI mode"
+    return
+  fi
+
   GHQ_ROOT=$(git config --global --get ghq.root 2>/dev/null || true)
   if [ -z "$GHQ_ROOT" ]; then
     GHQ_ROOT="$HOME/src"
