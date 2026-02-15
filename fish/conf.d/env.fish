@@ -27,14 +27,16 @@ if test -d "$HOME/.local/bin"
     fish_add_path $HOME/.local/bin
 end
 
+# macOS specific settings
+if test (uname -s) = "Darwin"
+    set -gx BROWSER open
+end
+
 # WSL specific settings
 if string match -q "*microsoft*" (uname -r)
-    # WSL specific environment variables
     set -gx BROWSER wslview
 
-    # Windows home directory - simplified without cmd.exe call
     if test -d "/mnt/c/Users"
-        # Try to find Windows user directory without calling cmd.exe
         for dir in /mnt/c/Users/*
             if test -d "$dir" -a -d "$dir/Desktop"
                 set -gx WINHOME $dir

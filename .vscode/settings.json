@@ -13,6 +13,21 @@
       "icon": "terminal-bash"
     }
   },
+  "terminal.integrated.defaultProfile.osx": "fish",
+  "terminal.integrated.profiles.osx": {
+    "fish": {
+      "path": "/opt/homebrew/bin/fish",
+      "icon": "terminal"
+    },
+    "fish-intel": {
+      "path": "/usr/local/bin/fish",
+      "icon": "terminal"
+    },
+    "zsh": {
+      "path": "/bin/zsh",
+      "icon": "terminal"
+    }
+  },
   "rustowl.immutableBorrowColor": "hsla(200, 100%, 50%, 0.8)",
   "rustowl.lifetimeColor": "hsla(0, 0%, 100%, 0.8)",
   "rustowl.moveCallColor": "hsla(60, 100%, 50%, 0.8)",
