@@ -78,9 +78,14 @@ sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
   lld \
   ca-certificates \
   gnupg \
+  locales \
   lsb-release \
   fish \
   wslu
+
+log_info "Configuring locale..."
+sudo locale-gen en_US.UTF-8
+sudo update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 
 log_info "Installing mise..."
 if ! command -v mise &> /dev/null; then
