@@ -11,7 +11,6 @@ This repository is a WSL (Ubuntu) and macOS dotfiles setup managed by Nix Flakes
 - `bash/`: Bash configuration (`bashrc`).
 - `fish/`: Fish shell config (`config.fish`, `conf.d/`, `functions/`).
 - `git/`: Git config and global ignore.
-- `mise/`: tool definitions (`mise.toml`).
 - `starship/`: prompt config (`starship.toml`).
 - `.vscode/`: VS Code settings and extensions list.
 - `.github/workflows/`: CI workflow (flake check + Home Manager switch).
@@ -20,8 +19,6 @@ This repository is a WSL (Ubuntu) and macOS dotfiles setup managed by Nix Flakes
 - `./bootstrap.sh`: run full setup locally (WSL Ubuntu or macOS).
 - `nix flake check --impure`: validate flake outputs and checks.
 - `nix run .#switch --impure`: apply Home Manager configuration.
-- `mise install`: install tools listed in `mise/mise.toml`.
-- `mise list --current`: verify installed tool versions.
 
 ## Coding Style & Naming Conventions
 - Shell scripts: follow existing style (2-space indent in `bootstrap.sh`).

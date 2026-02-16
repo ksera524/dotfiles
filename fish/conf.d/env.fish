@@ -4,10 +4,6 @@
 set -gx EDITOR vim
 set -gx VISUAL vim
 
-# Language settings
-set -gx LANG en_US.UTF-8
-set -gx LC_ALL en_US.UTF-8
-
 # Development
 set -gx NODE_ENV development
 

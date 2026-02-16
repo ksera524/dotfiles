@@ -12,7 +12,6 @@ set -gx LS_COLORS 'di=1;36:ln=1;35:so=1;32:pi=1;33:ex=1;31:bd=34;46:cd=34;43:su=
 
 # Basic PATH setup
 fish_add_path $HOME/.local/bin
-fish_add_path $HOME/.local/share/mise/shims
 
 # Aliases
 alias ll='ls -alF'
@@ -51,20 +50,10 @@ alias cp='cp -i'
 alias mv='mv -i'
 
 # Dotfiles management aliases
-alias dotfiles-install='cd ~/dotfiles && bash install.sh'
-alias dotfiles-update='cd ~/dotfiles && bash update-tools.sh'
-alias dotfiles-vscode='cd ~/dotfiles && bash apply-vscode-config.sh'
-alias dotfiles-git='cd ~/dotfiles && bash setup-git.sh'
-alias dotfiles-bootstrap='bash <(curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/bootstrap.sh)'
-alias mise-status='mise list --current'
+alias dotfiles-bootstrap='cd ~/dotfiles && ./bootstrap.sh'
 
 # Claude Code alias
 alias cc='claude --dangerously-skip-permissions'
-
-# Initialize mise if available
-if test -f "$HOME/.local/bin/mise"
-    $HOME/.local/bin/mise activate fish | source
-end
 
 # Initialize starship prompt
 if type -q starship
