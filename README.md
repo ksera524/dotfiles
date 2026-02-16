@@ -1,6 +1,6 @@
 # Dotfiles
 
-WSL Ubuntu環境向けの開発環境セットアップスクリプトです。
+WSL UbuntuとmacOSに対応した開発環境セットアップスクリプトです。
 
 ## 🚀 Quick Start
 
@@ -14,12 +14,12 @@ cd dotfiles
 
 ## 📦 What's Included
 
-`bootstrap.sh`は以下のすべてをセットアップします：
+`bootstrap.sh`はOSを判定してWSL/macOS向けのセットアップを実行します。
 
 - **🔧 開発ツール管理**: [mise](https://mise.jdx.dev/)による統一的なツール管理
 - **🐠 Fish Shell**: モダンなシェル環境とカスタム設定
 - **⭐ Starship**: クロスシェル対応のプロンプト
-- **🐳 Docker & Docker Compose**: コンテナ開発環境
+- **🐳 Docker & Docker Compose**: コンテナ開発環境（macOSはDocker Desktopを手動導入）
 - **📝 VS Code**: 設定と拡張機能の自動セットアップ
 - **🔄 Git**: ユーザー設定とエイリアス
 
@@ -28,7 +28,7 @@ cd dotfiles
 - **言語**: Node.js (LTS), Rust (stable), Python 3.12
 - **CLI**: GitHub CLI, ripgrep, fd, bat, eza, jq, bottom
 - **開発**: TypeScript, Claude Code CLI
-- **コンテナ**: Docker CE, Docker Compose
+- **コンテナ**: Docker CE, Docker Compose（macOSはDocker Desktop）
 
 ## 📚 Usage
 
@@ -63,7 +63,10 @@ mise upgrade node
 
 ```
 dotfiles/
-├── bootstrap.sh        # ワンショットセットアップスクリプト
+├── bootstrap.sh        # OS判定とディスパッチ
+├── wsl.sh              # WSL向けセットアップ
+├── mac.sh              # macOS向けセットアップ
+├── lib.sh              # 共通関数
 ├── bash/              # Bash設定
 │   └── bashrc
 ├── fish/              # Fish Shell設定
@@ -86,8 +89,13 @@ dotfiles/
 
 - **Fish Shell**: デフォルトシェルとして自動設定されます
 - **Git設定**: `gitconfig`と`gitignore_global`をシンボリックリンクで適用
-- **Docker**: WSL2環境用に最適化された設定
+- **Docker**: WSL2環境用に最適化された設定（macOSはDocker Desktopを案内）
 - **VS Code**: ターミナルのデフォルトシェルもFishに設定
+
+## 🍎 macOS Notes
+
+- **Xcode Command Line Tools**: 必須です（`xcode-select --install`）
+- **Homebrew**: 可能な限り使わず、`mise`中心でセットアップします
 
 ## 🦀 RustOwl Extension Colors
 

@@ -1,8 +1,11 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a WSL (Ubuntu) dotfiles setup with a single entry point:
-- `bootstrap.sh`: one-shot setup script (packages, mise, symlinks, Docker, VS Code, fish).
+This repository is a WSL (Ubuntu) and macOS dotfiles setup with a single entry point:
+- `bootstrap.sh`: OS detection and dispatcher for setup scripts.
+- `wsl.sh`: WSL setup (packages, mise, symlinks, Docker, VS Code, fish).
+- `mac.sh`: macOS setup (mise, symlinks, VS Code settings).
+- `lib.sh`: shared helpers for setup scripts.
 - `bash/`: Bash configuration (`bashrc`).
 - `fish/`: Fish shell config (`config.fish`, `conf.d/`, `functions/`).
 - `git/`: Git config and global ignore.
@@ -12,7 +15,7 @@ This repository is a WSL (Ubuntu) dotfiles setup with a single entry point:
 - `.github/workflows/`: CI workflow (bootstrap in CI mode).
 
 ## Build, Test, and Development Commands
-- `./bootstrap.sh`: run full setup locally (WSL Ubuntu expected).
+- `./bootstrap.sh`: run full setup locally (WSL Ubuntu or macOS).
 - `./bootstrap.sh --ci`: CI-safe setup (skips WSL-only steps like Docker install, shell change).
 - `mise install`: install tools listed in `mise/mise.toml`.
 - `mise list --current`: verify installed tool versions.
@@ -38,6 +41,7 @@ PRs should include:
 - notes on WSL impact (if applicable)
 - confirmation that CI passes (or why it does not)
 
-## WSL/CI Notes
-- The project assumes WSL Ubuntu for local setup. Non-WSL usage may require `--skip-wsl-check`.
+## WSL/macOS/CI Notes
+- WSL and macOS are supported; non-WSL Linux may require `--skip-wsl-check`.
+- macOS requires Xcode Command Line Tools (`xcode-select --install`).
 - CI uses `--ci` and may skip Docker, VS Code extensions, and default shell changes.
