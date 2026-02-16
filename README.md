@@ -1,10 +1,8 @@
 # Dotfiles
 
-WSL UbuntuとmacOSに対応した開発環境セットアップスクリプトです。
+macOS and Ubuntu (WSL) dotfiles managed by Nix Flakes + Home Manager.
 
-## 🚀 Quick Start
-
-### セットアップ
+## Quick Start
 
 ```bash
 git clone https://github.com/ksera524/dotfiles.git
@@ -12,99 +10,53 @@ cd dotfiles
 ./bootstrap.sh
 ```
 
-## 📦 What's Included
+`bootstrap.sh` runs `scripts/switch.sh`, which installs prerequisites and applies the Home Manager config.
 
-`bootstrap.sh`はOSを判定してWSL/macOS向けのセットアップを実行します。
+## Personal Settings
 
-- **🔧 開発ツール管理**: [mise](https://mise.jdx.dev/)による統一的なツール管理
-- **🐠 Fish Shell**: モダンなシェル環境とカスタム設定
-- **⭐ Starship**: クロスシェル対応のプロンプト
-- **🐳 Docker & Docker Compose**: コンテナ開発環境（macOSはDocker Desktopを手動導入）
-- **📝 VS Code**: 設定と拡張機能の自動セットアップ
-- **🔄 Git**: ユーザー設定とエイリアス
-
-### インストールされるツール
-
-- **言語**: Node.js (LTS), Rust (stable), Python 3.12
-- **CLI**: GitHub CLI, ripgrep, fd, bat, eza, jq, bottom
-- **開発**: TypeScript, Claude Code CLI
-- **コンテナ**: Docker CE, Docker Compose（macOSはDocker Desktop）
-
-## 📚 Usage
-
-### Dotfilesの更新をpush
-
-どこからでもdotfilesの変更をGitHubにpushできます：
+Git identity is intentionally not hardcoded in tracked Nix modules.
 
 ```bash
-# デフォルトメッセージでpush
-dotpush
-
-# カスタムメッセージでpush
-dotpush "Add new aliases"
+cp home.local.nix.sample ~/.config/dotfiles/home.local.nix
+$EDITOR ~/.config/dotfiles/home.local.nix
 ```
 
-### miseでツール管理
+At minimum, set:
 
-```bash
-# インストール済みツールの確認
-mise list
-
-# すべてのツールを更新
-mise upgrade
-
-# 特定のツールを更新
-mise upgrade node
+```nix
+programs.git.userName = "Your Name";
+programs.git.userEmail = "you@example.com";
 ```
 
-## 🔧 Configuration Files
+## Commands
 
-### ディレクトリ構造
+- Apply config: `nix run .#switch --impure`
+- Install VS Code recommended extensions: `dotfiles-vscode-extensions`
+- Re-run bootstrap wrapper: `./scripts/switch.sh`
 
+## Structure
+
+```text
+.
+├── flake.nix
+├── home/
+│   ├── common.nix
+│   ├── linux.nix
+│   ├── darwin.nix
+│   └── modules/
+│       ├── packages.nix
+│       ├── shell.nix
+│       ├── git.nix
+│       ├── starship.nix
+│       └── vscode.nix
+├── scripts/
+│   ├── bootstrap-prereq.sh
+│   └── switch.sh
+└── home.local.nix.sample
 ```
-dotfiles/
-├── bootstrap.sh        # OS判定とディスパッチ
-├── wsl.sh              # WSL向けセットアップ
-├── mac.sh              # macOS向けセットアップ
-├── lib.sh              # 共通関数
-├── bash/              # Bash設定
-│   └── bashrc
-├── fish/              # Fish Shell設定
-│   ├── config.fish
-│   ├── functions/
-│   └── conf.d/
-├── git/               # Git設定
-│   ├── gitconfig
-│   └── gitignore_global
-├── starship/          # Starshipプロンプト設定
-│   └── starship.toml
-├── mise/              # mise設定
-│   └── mise.toml
-└── .vscode/           # VS Code設定
-    ├── settings.json
-    └── extensions.json
-```
 
-## 📝 Notes
+## Notes
 
-- **Fish Shell**: デフォルトシェルとして自動設定されます
-- **Git設定**: `gitconfig`と`gitignore_global`をシンボリックリンクで適用
-- **Docker**: WSL2環境用に最適化された設定（macOSはDocker Desktopを案内）
-- **VS Code**: ターミナルのデフォルトシェルもFishに設定
-
-## 🍎 macOS Notes
-
-- **Xcode Command Line Tools**: 必須です（`xcode-select --install`）
-- **Homebrew**: 可能な限り使わず、`mise`中心でセットアップします
-
-## 🦀 RustOwl Extension Colors
-
-VS Code設定に含まれるRustOwl拡張機能のカラースキーム：
-
-| Feature | Color | HSL Value | Description |
-|---------|-------|-----------|-------------|
-| **Immutable Borrow** | Cyan (明るい青) | `hsla(200, 100%, 50%, 0.8)` | 不変借用を示す下線 |
-| **Lifetime** | White (白) | `hsla(0, 0%, 100%, 0.8)` | ライフタイムを示す下線 |
-| **Move/Call** | Yellow (黄色) | `hsla(60, 100%, 50%, 0.8)` | ムーブ/関数呼び出しを示す下線 |
-| **Mutable Borrow** | Red (赤) | `hsla(0, 100%, 50%, 0.8)` | 可変借用を示す下線 |
-| **Outlive** | Gray (灰色) | `hsla(0, 0%, 50%, 0.8)` | ライフタイム制約を示す下線 |
+- `bootstrap.sh --legacy` keeps the previous `wsl.sh` / `mac.sh` flow available while migrating.
+- Docker installation and privileged OS-level setup are intentionally outside Home Manager scope.
+- WSL and macOS are first-class targets; CI validates both.

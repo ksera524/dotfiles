@@ -1,0 +1,17 @@
+{ ... }:
+{
+  programs.git = {
+    userName = "Your Name";
+    userEmail = "you@example.com";
+  };
+
+  # Optional examples:
+  # programs.git.signing = {
+  #   key = "YOUR_GPG_KEY_ID";
+  #   signByDefault = true;
+  # };
+  #
+  # home.sessionVariables = {
+  #   MY_ENV = "value";
+  # };
+}
