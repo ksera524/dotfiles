@@ -10,6 +10,13 @@ cd dotfiles
 ./bootstrap.sh
 ```
 
+Ubuntu/WSL・macOS ともに、fish をログインシェルにする場合は `chsh` が必要です。`/etc/shells` に fish が未登録の場合は先に追加してください。
+
+```bash
+echo "$(command -v fish)" | sudo tee -a /etc/shells
+chsh -s "$(command -v fish)"
+```
+
 `bootstrap.sh` は `sudo` ではなく通常ユーザーで実行してください。
 
 `bootstrap.sh` は `scripts/switch.sh` を呼び出し、前提ツールの準備と Home Manager 設定の適用を行います。
