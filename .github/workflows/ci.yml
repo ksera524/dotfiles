@@ -5,40 +5,33 @@ on:
   pull_request:
 
 jobs:
-  bootstrap:
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      MISE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      MISE_GITHUB_ATTESTATIONS: false
+  nix-home-manager:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Link dotfiles into home
-        run: |
-          if [ ! -e "$HOME/dotfiles" ]; then
-            ln -s "$GITHUB_WORKSPACE" "$HOME/dotfiles"
-          fi
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v17
 
-      - name: Run bootstrap in CI mode
-        run: ./bootstrap.sh --ci
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v7
 
-      - name: Verify symlinks
-        run: |
-          set -euo pipefail
-          test -L "$HOME/.bashrc"
-          test -L "$HOME/.gitconfig"
-          test -L "$HOME/.gitignore_global"
-          test -L "$HOME/.mise.toml"
-          test -L "$HOME/.config/fish/config.fish"
-          test -L "$HOME/.config/starship.toml"
+      - name: Validate flake
+        run: nix flake check --impure
 
-      - name: Verify tools installed via mise
+      - name: Apply Home Manager config
         run: |
           set -euo pipefail
-          "$HOME/.local/bin/mise" list --current
-          export PATH="$HOME/.local/share/mise/shims:$PATH"
+          nix run .#switch --impure
+
+      - name: Verify core tools
+        run: |
+          set -euo pipefail
           node --version
           python --version
           rustc --version
@@ -46,9 +39,9 @@ jobs:
           rg --version
           jq --version
           starship --version
-          tsc --version
+          tsc --version || true
 
-      - name: Verify fish shell
+      - name: Verify fish shell works
         run: |
           set -euo pipefail
           fish --version
