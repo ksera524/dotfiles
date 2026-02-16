@@ -1,22 +1,25 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a WSL (Ubuntu) and macOS dotfiles setup with a single entry point:
-- `bootstrap.sh`: OS detection and dispatcher for setup scripts.
-- `wsl.sh`: WSL setup (packages, mise, symlinks, Docker, VS Code, fish).
-- `mac.sh`: macOS setup (mise, symlinks, VS Code settings).
-- `lib.sh`: shared helpers for setup scripts.
+This repository is a WSL (Ubuntu) and macOS dotfiles setup managed by Nix Flakes + Home Manager:
+- `bootstrap.sh`: entry point that validates user context and delegates to `scripts/switch.sh`.
+- `scripts/bootstrap-prereq.sh`: installs Nix and prepares local prerequisites.
+- `scripts/switch.sh`: runs `nix run .#switch --impure`.
+- `flake.nix` / `flake.lock`: flake inputs, app entrypoints, and lockfile.
+- `home/`: Home Manager modules (`common.nix`, `linux.nix`, `darwin.nix`, `modules/`).
+- `home.local.nix.sample`: local, machine-specific overrides template.
 - `bash/`: Bash configuration (`bashrc`).
 - `fish/`: Fish shell config (`config.fish`, `conf.d/`, `functions/`).
 - `git/`: Git config and global ignore.
 - `mise/`: tool definitions (`mise.toml`).
 - `starship/`: prompt config (`starship.toml`).
 - `.vscode/`: VS Code settings and extensions list.
-- `.github/workflows/`: CI workflow (bootstrap in CI mode).
+- `.github/workflows/`: CI workflow (flake check + Home Manager switch).
 
 ## Build, Test, and Development Commands
 - `./bootstrap.sh`: run full setup locally (WSL Ubuntu or macOS).
-- `./bootstrap.sh --ci`: CI-safe setup (skips WSL-only steps like Docker install, shell change).
+- `nix flake check --impure`: validate flake outputs and checks.
+- `nix run .#switch --impure`: apply Home Manager configuration.
 - `mise install`: install tools listed in `mise/mise.toml`.
 - `mise list --current`: verify installed tool versions.
 
@@ -28,8 +31,9 @@ This repository is a WSL (Ubuntu) and macOS dotfiles setup with a single entry p
 
 ## Testing Guidelines
 There is no unit test framework. CI validates reproducibility by:
-- running `./bootstrap.sh --ci`
-- verifying symlinks and tool availability (see `.github/workflows/ci.yml`)
+- running `nix flake check --impure`
+- running `nix run .#switch --impure`
+- verifying core tool availability (see `.github/workflows/ci.yml`)
 If you add tests or checks, document how to run them in this file.
 
 ## Commit & Pull Request Guidelines
@@ -42,6 +46,6 @@ PRs should include:
 - confirmation that CI passes (or why it does not)
 
 ## WSL/macOS/CI Notes
-- WSL and macOS are supported; non-WSL Linux may require `--skip-wsl-check`.
+- WSL and macOS are supported.
 - macOS requires Xcode Command Line Tools (`xcode-select --install`).
-- CI uses `--ci` and may skip Docker, VS Code extensions, and default shell changes.
+- Run bootstrap/switch as a normal user, not with `sudo`.

@@ -10,6 +10,8 @@ cd dotfiles
 ./bootstrap.sh
 ```
 
+`bootstrap.sh` は `sudo` ではなく通常ユーザーで実行してください。
+
 `bootstrap.sh` は `scripts/switch.sh` を呼び出し、前提ツールの準備と Home Manager 設定の適用を行います。
 
 ## 個人設定
@@ -59,3 +61,4 @@ programs.git.userEmail = "you@example.com";
 
 - Docker の導入や権限が必要な OS レベル設定は、意図的に Home Manager の責務から外しています。
 - WSL と macOS を正式サポート対象とし、CI で両方を検証しています。
+- Nix インストール直後に `nix` が見つからない場合は `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh` を実行するか、新しいターミナルを開いてください。
