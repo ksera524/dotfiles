@@ -23,6 +23,9 @@
       starship
       hugo
       nodePackages.typescript
+      (pkgs."claude-code")
+      pkgs.codex
+      pkgs.opencode
     ]
     ++ lib.optionals stdenv.isLinux [
       lld
