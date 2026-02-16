@@ -6,7 +6,11 @@ on:
 
 jobs:
   bootstrap-e2e:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,6 +45,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v17
 
       - name: Setup Nix cache
+        if: matrix.os != 'macos-latest'
         uses: DeterminateSystems/magic-nix-cache-action@v7
 
       - name: Validate flake
