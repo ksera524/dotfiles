@@ -5,6 +5,28 @@ on:
   pull_request:
 
 jobs:
+  bootstrap-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run bootstrap end-to-end
+        run: |
+          set -euo pipefail
+          ./bootstrap.sh
+
+      - name: Verify bootstrap results
+        run: |
+          set -euo pipefail
+          if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+            # shellcheck disable=SC1091
+            source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+          fi
+          home-manager generations
+          fish --version
+          fish -c 'echo ok'
+
   nix-home-manager:
     strategy:
       fail-fast: false

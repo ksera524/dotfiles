@@ -8,9 +8,11 @@ log() {
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
 NIX_PROFILE_SCRIPT="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+NIX_FALLBACK_BIN="/nix/var/nix/profiles/default/bin/nix"
 
-ensure_nix_in_path() {
+ensure_nix_available() {
   if command -v nix >/dev/null 2>&1; then
+    NIX_BIN="$(command -v nix)"
     return 0
   fi
 
@@ -19,20 +21,30 @@ ensure_nix_in_path() {
     source "$NIX_PROFILE_SCRIPT"
   fi
 
-  command -v nix >/dev/null 2>&1
+  if command -v nix >/dev/null 2>&1; then
+    NIX_BIN="$(command -v nix)"
+    return 0
+  fi
+
+  if [[ -x "$NIX_FALLBACK_BIN" ]]; then
+    NIX_BIN="$NIX_FALLBACK_BIN"
+    return 0
+  fi
+
+  return 1
 }
 
-ensure_nix_in_path || true
+ensure_nix_available || true
 
-if ! ensure_nix_in_path; then
+if ! ensure_nix_available; then
   log "Installing Nix..."
   sh <(curl --proto '=https' --tlsv1.2 -L https://install.determinate.systems/nix) install --no-confirm
-  ensure_nix_in_path || true
+  ensure_nix_available || true
 else
   log "Nix already installed"
 fi
 
-if ! command -v nix >/dev/null 2>&1; then
+if ! ensure_nix_available; then
   log "Error: nix command is not available in this shell."
   log "Run: source $NIX_PROFILE_SCRIPT"
   log "Or open a new terminal and run ./bootstrap.sh again."
