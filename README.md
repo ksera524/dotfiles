@@ -10,12 +10,7 @@ cd dotfiles
 ./bootstrap.sh
 ```
 
-Ubuntu/WSL・macOS ともに、fish をログインシェルにする場合は `chsh` が必要です。`/etc/shells` に fish が未登録の場合は先に追加してください。
-
-```bash
-echo "$(command -v fish)" | sudo tee -a /etc/shells
-chsh -s "$(command -v fish)"
-```
+この設定ではシステムのログインシェルは bash のままにし、対話型の bash セッション開始時に fish を起動します。
 
 `bootstrap.sh` は `sudo` ではなく通常ユーザーで実行してください。
 
