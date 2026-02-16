@@ -65,6 +65,10 @@
       if [ -f "$HOME/.bashrc.local" ]; then
           . "$HOME/.bashrc.local"
       fi
+
+      if [[ $(ps --no-header --pid=$PPID --format=comm) != "fish" && -z ''${BASH_EXECUTION_STRING} ]]; then
+        exec fish
+      fi
     '';
   };
 
