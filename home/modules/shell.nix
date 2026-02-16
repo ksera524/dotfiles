@@ -66,7 +66,7 @@
           . "$HOME/.bashrc.local"
       fi
 
-      if [[ $(ps --no-header --pid=$PPID --format=comm) != "fish" && -z ''${BASH_EXECUTION_STRING} ]]; then
+      if command -v fish >/dev/null 2>&1 && [[ $(ps --no-header --pid=$PPID --format=comm) != "fish" && -z ''${BASH_EXECUTION_STRING} ]]; then
         exec fish
       fi
     '';
