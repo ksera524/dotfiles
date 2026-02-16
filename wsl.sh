@@ -255,7 +255,11 @@ printf '\n'
 log_info "Installed versions:"
 if command -v mise &> /dev/null; then
   echo "  • mise: $(mise --version 2>/dev/null | head -n1)"
-  mise list --current 2>/dev/null | head -n10
+  if [ "$CI_MODE" = true ]; then
+    mise list --current 2>/dev/null || true
+  else
+    mise list --current 2>/dev/null | head -n10
+  fi
 fi
 [ -x "$(command -v docker)" ] && echo "  • Docker: $(docker --version | cut -d' ' -f3 | cut -d',' -f1)"
 [ -x "$(command -v fish)" ] && echo "  • Fish: $(fish --version 2>&1 | cut -d' ' -f3)"
