@@ -1,139 +1,154 @@
-# Starship Configuration
+# Starship configuration (practical, low-emoji)
 
+format = "$username$hostname$directory$git_branch$git_status$git_state$python$nodejs$rust$docker_context$kubernetes$terraform$package$line_break$status$character"
+right_format = "$cmd_duration$jobs$time"
+add_newline = true
+scan_timeout = 30
+command_timeout = 1_000
+palette = "work"
 
-# プロンプトの右側
-right_format = """$time"""
+[palettes.work]
+fg = "#d7dbe0"
+muted = "#8a95a5"
+ok = "#7dbb7d"
+warn = "#d8b15f"
+err = "#d97a7a"
+accent = "#7aa2d6"
+git = "#b48ead"
 
-# コマンド実行時間の表示
-[cmd_duration]
-min_time = 2_000
-format = "took [$duration]($style) "
-style = "bold yellow"
-
-# ユーザー名
 [username]
-style_user = "bold blue"
-style_root = "bold red"
-format = "[$user]($style)@"
 disabled = false
 show_always = true
+style_user = "bold accent"
+style_root = "bold err"
+format = "[$user]($style)@"
 
-# ディレクトリ
+[hostname]
+ssh_only = true
+style = "muted"
+format = "[$hostname]($style):"
+
 [directory]
-truncation_length = 100
-truncate_to_repo = false
+style = "fg"
+read_only_style = "warn"
+read_only = " ro"
+truncation_length = 4
+truncate_to_repo = true
+truncation_symbol = ".../"
+home_symbol = "~"
+format = "[$path]($style)[$read_only]($read_only_style) "
 
-
-# Git ブランチ
 [git_branch]
-symbol = " "
-format = "on [$symbol$branch]($style) "
-style = "bold purple"
-truncation_length = 10
+symbol = "git:"
+style = "git"
+truncation_length = 24
+format = "[$symbol$branch]($style) "
 
-# Git ステータス
 [git_status]
-disabled = true
-
-# 文字（プロンプトの末尾）
-[character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
-vicmd_symbol = "[❮](bold green)"
-
-# 時刻
-[time]
 disabled = false
-format = '[$time]($style)'
-style = "bold yellow"
-time_format = "%H:%M"
+style = "warn"
+format = "([$all_status$ahead_behind]($style) )"
+conflicted = "=${count}"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = ""
+untracked = "?${count}"
+stashed = "*${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = ">${count}"
+deleted = "x${count}"
 
-# Rust
-[rust]
-symbol = "🦀 "
-format = "via [$symbol($version )]($style)"
-style = "bold red"
+[git_state]
+style = "warn"
+format = "\\([$state( $progress_current/$progress_total)]($style)\\) "
 
-# Node.js
+[python]
+symbol = "py "
+style = "accent"
+pyenv_version_name = true
+version_format = "v${raw}"
+format = "[$symbol$version(($virtualenv))]($style) "
+
 [nodejs]
-symbol = " "
-format = "via [$symbol($version )]($style)"
-style = "bold green"
+symbol = "node "
+style = "ok"
+format = "[$symbol$version]($style) "
 detect_files = ["package.json", ".node-version", ".nvmrc"]
 detect_folders = ["node_modules"]
 
-# Python
-[python]
-symbol = "🐍 "
-format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
-style = "bold yellow"
-pyenv_version_name = true
+[rust]
+symbol = "rs "
+style = "err"
+format = "[$symbol$version]($style) "
 
-# Docker
 [docker_context]
-symbol = "🐳 "
-format = "via [$symbol$context]($style) "
-style = "bold blue"
+symbol = "docker "
+style = "accent"
+format = "[$symbol$context]($style) "
 only_with_files = true
 detect_files = ["docker-compose.yml", "docker-compose.yaml", "Dockerfile"]
 
-# パッケージのバージョン
+[kubernetes]
+disabled = false
+symbol = "k8s "
+style = "accent"
+format = "[$symbol$context(::$namespace)]($style) "
+
+[terraform]
+symbol = "tf "
+style = "git"
+format = "[$symbol$workspace]($style) "
+
 [package]
 disabled = false
-symbol = "📦 "
-style = "bold 208"
-format = "via [$symbol$version]($style) "
+symbol = "pkg "
+style = "muted"
+format = "[$symbol$version]($style) "
 
-# メモリ使用量
-[memory_usage]
-disabled = true
-threshold = 75
-symbol = "🧠 "
-format = "via $symbol[$ram_pct]($style) "
-style = "bold dimmed white"
-
-# バッテリー
-[battery]
-full_symbol = "🔋"
-charging_symbol = "⚡️"
-discharging_symbol = "💀"
-unknown_symbol = "🤷"
-empty_symbol = "🪫"
-
-[[battery.display]]
-threshold = 10
-style = "bold red"
-
-[[battery.display]]
-threshold = 30
-style = "bold yellow"
-
-# AWS
-[aws]
-format = 'on [$symbol($profile )(\($region\) )]($style)'
-style = "bold yellow"
-symbol = "☁️  "
-
-# Kubernetes
-[kubernetes]
-format = 'on [$symbol$context( \($namespace\))]($style) '
-symbol = "☸ "
-style = "bold blue"
+[status]
 disabled = false
+style = "bold err"
+symbol = ""
+format = "[$status]($style) "
 
-# Terraform
-[terraform]
-format = "via [$symbol$workspace]($style) "
-symbol = "💠 "
-style = "bold purple"
+[character]
+success_symbol = "[❯](bold ok)"
+error_symbol = "[❯](bold err)"
+vicmd_symbol = "[❮](bold accent)"
 
-# 改行
+[cmd_duration]
+min_time = 1_500
+style = "muted"
+format = "[$duration]($style) "
+
+[jobs]
+symbol = "j"
+style = "muted"
+number_threshold = 2
+format = "[$symbol$number]($style) "
+
+[time]
+disabled = false
+time_format = "%H:%M"
+style = "muted"
+format = "[$time]($style)"
+
 [line_break]
 disabled = false
 
-# ジョブ
-[jobs]
-symbol = "+"
-style = "bold blue"
-number_threshold = 1
-format = "[$symbol$number]($style) "
+[battery]
+full_symbol = "bat"
+charging_symbol = "chg"
+discharging_symbol = "bat"
+unknown_symbol = "?"
+empty_symbol = "low"
+
+[[battery.display]]
+threshold = 20
+style = "bold err"
+
+[[battery.display]]
+threshold = 35
+style = "bold warn"
