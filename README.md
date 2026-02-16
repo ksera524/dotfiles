@@ -1,8 +1,8 @@
 # Dotfiles
 
-macOS and Ubuntu (WSL) dotfiles managed by Nix Flakes + Home Manager.
+Nix Flakes + Home Manager で管理する、macOS と Ubuntu (WSL) 向けの dotfiles です。
 
-## Quick Start
+## クイックスタート
 
 ```bash
 git clone https://github.com/ksera524/dotfiles.git
@@ -10,31 +10,31 @@ cd dotfiles
 ./bootstrap.sh
 ```
 
-`bootstrap.sh` runs `scripts/switch.sh`, which installs prerequisites and applies the Home Manager config.
+`bootstrap.sh` は `scripts/switch.sh` を呼び出し、前提ツールの準備と Home Manager 設定の適用を行います。
 
-## Personal Settings
+## 個人設定
 
-Git identity is intentionally not hardcoded in tracked Nix modules.
+Git のユーザー情報は、追跡対象の Nix モジュールにはあえて固定していません。
 
 ```bash
 cp home.local.nix.sample ~/.config/dotfiles/home.local.nix
 $EDITOR ~/.config/dotfiles/home.local.nix
 ```
 
-At minimum, set:
+最低限、次を設定してください:
 
 ```nix
 programs.git.userName = "Your Name";
 programs.git.userEmail = "you@example.com";
 ```
 
-## Commands
+## コマンド
 
-- Apply config: `nix run .#switch --impure`
-- Install VS Code recommended extensions: `dotfiles-vscode-extensions`
-- Re-run bootstrap wrapper: `./scripts/switch.sh`
+- 設定を適用: `nix run .#switch --impure`
+- VS Code 推奨拡張をインストール: `dotfiles-vscode-extensions`
+- bootstrap ラッパーを再実行: `./scripts/switch.sh`
 
-## Structure
+## 構成
 
 ```text
 .
@@ -55,8 +55,7 @@ programs.git.userEmail = "you@example.com";
 └── home.local.nix.sample
 ```
 
-## Notes
+## 補足
 
-- `bootstrap.sh --legacy` keeps the previous `wsl.sh` / `mac.sh` flow available while migrating.
-- Docker installation and privileged OS-level setup are intentionally outside Home Manager scope.
-- WSL and macOS are first-class targets; CI validates both.
+- Docker の導入や権限が必要な OS レベル設定は、意図的に Home Manager の責務から外しています。
+- WSL と macOS を正式サポート対象とし、CI で両方を検証しています。
