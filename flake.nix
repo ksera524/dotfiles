@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
@@ -11,11 +12,18 @@
   outputs = {
     self,
     nixpkgs,
+    nixpkgs-unstable,
     home-manager,
     flake-utils,
     ...
   }:
     let
+      unstableFor = system:
+        import nixpkgs-unstable {
+          inherit system;
+          config.allowUnfree = true;
+        };
+
       overlayGhqBinary = system: final: prev: {
         ghq = prev.stdenvNoCC.mkDerivation (finalAttrs: let
           assets = {
@@ -71,12 +79,25 @@
         });
       };
 
+      overlayAiTools = system: final: prev:
+        let
+          unstablePkgs = unstableFor system;
+        in
+        {
+          "claude-code" = unstablePkgs."claude-code";
+          codex = unstablePkgs.codex;
+          opencode = unstablePkgs.opencode;
+        };
+
       mkHome = { system, profile }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
-            overlays = [ (overlayGhqBinary system) ];
+            overlays = [
+              (overlayGhqBinary system)
+              (overlayAiTools system)
+            ];
           };
           modules = [
             ({ lib, ... }:
@@ -120,7 +141,10 @@
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
-            overlays = [ (overlayGhqBinary system) ];
+            overlays = [
+              (overlayGhqBinary system)
+              (overlayAiTools system)
+            ];
           };
           profileKey =
             if system == "x86_64-linux" then "linux"
