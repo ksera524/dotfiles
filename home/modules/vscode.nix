@@ -10,6 +10,7 @@ in
     }
     (lib.mkIf pkgs.stdenv.isLinux {
       ".config/Code/User/settings.json".source = settingsSource;
+      ".vscode-server/data/Machine/settings.json".source = settingsSource;
     })
     (lib.mkIf pkgs.stdenv.isDarwin {
       "Library/Application Support/Code/User/settings.json".source = settingsSource;

@@ -28,7 +28,10 @@
       pkgs.opencode
     ]
     ++ lib.optionals stdenv.isLinux [
+      clang
       lld
+      mold
+      nasm
       pkg-config
       openssl
     ];
