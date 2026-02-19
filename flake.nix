@@ -4,6 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
@@ -13,6 +17,7 @@
     self,
     nixpkgs,
     nixpkgs-unstable,
+    rust-overlay,
     home-manager,
     flake-utils,
     ...
@@ -95,6 +100,7 @@
             inherit system;
             config.allowUnfree = true;
             overlays = [
+              (import rust-overlay)
               (overlayGhqBinary system)
               (overlayAiTools system)
             ];
@@ -142,6 +148,7 @@
             inherit system;
             config.allowUnfree = true;
             overlays = [
+              (import rust-overlay)
               (overlayGhqBinary system)
               (overlayAiTools system)
             ];

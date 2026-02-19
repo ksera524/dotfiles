@@ -5,10 +5,13 @@
       nodejs
       python312
       go
-      rustc
-      cargo
-      rustfmt
-      clippy
+      (rust-bin.stable.latest.default.override {
+        extensions = [
+          "rust-src"
+          "rustfmt"
+          "clippy"
+        ];
+      })
       gh
       ripgrep
       fd
