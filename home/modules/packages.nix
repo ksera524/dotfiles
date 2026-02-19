@@ -31,8 +31,9 @@
       pkgs.opencode
     ]
     ++ lib.optionals stdenv.isLinux [
-      gcc
+      gcc-unwrapped
       gnumake
+      clang
       lld
       mold
       perl
