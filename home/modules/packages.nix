@@ -31,9 +31,11 @@
       pkgs.opencode
     ]
     ++ lib.optionals stdenv.isLinux [
-      clang
+      gcc
+      gnumake
       lld
       mold
+      perl
       nasm
       pkg-config
       openssl
