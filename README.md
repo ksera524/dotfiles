@@ -97,6 +97,15 @@ nix flake lock --update-input nixpkgs
 
 更新後は `flake.lock` の差分を確認し、問題なければコミットします。
 
+Rust を公式 stable の最新へ追従したい場合は、`rust-overlay` も更新します。
+
+```bash
+nix flake lock --update-input rust-overlay
+nix run .#switch --impure
+rustc --version
+cargo --version
+```
+
 ### 6) 現在の構成で入るバージョン確認
 
 ```bash
