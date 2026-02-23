@@ -36,7 +36,8 @@ programs.git.userEmail = "you@example.com";
 
 - 設定を適用: `nix run .#switch --impure`
 - 入力整合性チェック: `nix flake check --impure`
-- VS Code 推奨拡張をインストール: `dotfiles-vscode-extensions`
+- VS Code 推奨拡張（WSL/Linux）を switch 時に自動インストール: `nix run .#switch --impure`
+- VS Code 推奨拡張を手動再適用: `dotfiles-vscode-extensions`
 - bootstrap ラッパーを再実行: `./scripts/switch.sh`
 
 ## Nixの使い方（このリポジトリ）
