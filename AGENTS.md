@@ -11,7 +11,6 @@ This repository is a WSL (Ubuntu) and macOS dotfiles setup managed by Nix Flakes
 - `bash/`: Bash configuration (`bashrc`).
 - `fish/`: Fish shell config (`config.fish`, `conf.d/`, `functions/`).
 - `git/`: Git config and global ignore.
-- `starship/`: prompt config (`starship.toml`).
 - `.vscode/`: VS Code settings and extensions list.
 - `.github/workflows/`: CI workflow (flake check + Home Manager switch).
 
