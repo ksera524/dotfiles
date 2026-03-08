@@ -65,7 +65,6 @@ jobs:
           go version
           rg --version
           jq --version
-          starship --version
           tsc --version || true
 
       - name: Verify fish shell works

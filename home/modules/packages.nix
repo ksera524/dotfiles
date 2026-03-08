@@ -23,7 +23,6 @@
       fzf
       tmux
       fish
-      starship
       hugo
       nodePackages.typescript
       (pkgs."claude-code")

@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   programs.bash = {
     enable = true;
@@ -58,10 +58,6 @@
           cd "$current_dir" || return
       }
 
-      if command -v starship >/dev/null 2>&1; then
-          eval "$(starship init bash)"
-      fi
-
       if [ -f "$HOME/.bashrc.local" ]; then
           . "$HOME/.bashrc.local"
       fi
@@ -74,6 +70,12 @@
 
   programs.fish = {
     enable = true;
+    plugins = [
+      {
+        name = "pure";
+        src = pkgs.fishPlugins.pure.src;
+      }
+    ];
     shellAliases = {
       ll = "ls -alF";
       la = "ls -A";
@@ -125,10 +127,6 @@
       set -g fish_history_size 10000
       set -gx LSCOLORS GxFxCxDxBxegedabagaced
       set -gx LS_COLORS 'di=1;36:ln=1;35:so=1;32:pi=1;33:ex=1;31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43'
-
-      if type -q starship
-          starship init fish | source
-      end
 
       if test -f "$HOME/.config/fish/config.local.fish"
           source "$HOME/.config/fish/config.local.fish"

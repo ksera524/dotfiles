@@ -55,11 +55,6 @@ alias dotfiles-bootstrap='cd ~/dotfiles && ./bootstrap.sh'
 # Claude Code alias
 alias cc='claude --dangerously-skip-permissions'
 
-# Initialize starship prompt
-if type -q starship
-    starship init fish | source
-end
-
 # Load local configuration if exists
 if test -f "$HOME/.config/fish/config.local.fish"
     source "$HOME/.config/fish/config.local.fish"

@@ -11,7 +11,6 @@ in
       ./modules/packages.nix
       ./modules/shell.nix
       ./modules/git.nix
-      ./modules/starship.nix
       ./modules/vscode.nix
     ]
     ++ lib.optional (builtins.pathExists localConfigPath) (builtins.toPath localConfigPath);
