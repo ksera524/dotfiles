@@ -41,7 +41,6 @@ venv/
 
 ## Rust
 target/
-Cargo.lock
 **/*.rs.bk
 
 # Build outputs
