@@ -6,12 +6,19 @@ set -g fish_greeting
 # History settings
 set -g fish_history_size 10000
 
+status is-interactive; or return
+
+# Pure prompt performance tuning
+set -g pure_enable_container_detection false
+set -g pure_enable_virtualenv false
+set -g pure_enable_aws_profile false
+set -g pure_enable_single_line_prompt true
+
+functions --erase _pure_prompt_git 2>/dev/null
+
 # Color settings for ls
 set -gx LSCOLORS GxFxCxDxBxegedabagaced
 set -gx LS_COLORS 'di=1;36:ln=1;35:so=1;32:pi=1;33:ex=1;31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43'
-
-# Basic PATH setup
-fish_add_path $HOME/.local/bin
 
 # Aliases
 alias ll='ls -alF'
@@ -27,13 +34,6 @@ alias cat='bat'
 alias find='fd'
 alias grep='rg'
 alias gq='ghq-cd'
-
-function ghq-cd
-    set -l dest (ghq list -p | fzf --prompt='ghq> ' --height=40% --reverse)
-    if test -n "$dest"
-        cd "$dest"
-    end
-end
 
 # Git aliases
 alias gs='git status'
