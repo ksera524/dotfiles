@@ -76,14 +76,13 @@
         src = pkgs.fishPlugins.pure.src;
       }
     ];
-    shellAliases = {
+    shellAbbrs = {
       ll = "ls -alF";
       la = "ls -A";
       l = "ls -CF";
       ".." = "cd ..";
       "..." = "cd ../..";
       "...." = "cd ../../..";
-
       ls = "eza";
       cat = "bat";
       find = "fd";
@@ -101,8 +100,6 @@
       mv = "mv -i";
       dotfiles-bootstrap = "nix run ~/dotfiles#switch --impure";
       cc = "claude --dangerously-skip-permissions";
-    };
-    shellAbbrs = {
       cdd = "cd ~/dotfiles";
       cdp = "cd ~/projects";
       gco = "git checkout";
