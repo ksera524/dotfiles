@@ -33,6 +33,10 @@
       export HISTCONTROL=ignoreboth:erasedups
       shopt -s histappend
       shopt -s checkwinsize
+      export OPENSSL_DIR="${pkgs.openssl.dev}"
+      export OPENSSL_LIB_DIR="${pkgs.openssl.out}/lib"
+      export OPENSSL_INCLUDE_DIR="${pkgs.openssl.dev}/include"
+      export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
 
       ghq-cd() {
           local dest
@@ -281,6 +285,16 @@
   '';
 
   home.file.".config/fish/conf.d/env.fish".text = ''
+    set -gx OPENSSL_DIR "${pkgs.openssl.dev}"
+    set -gx OPENSSL_LIB_DIR "${pkgs.openssl.out}/lib"
+    set -gx OPENSSL_INCLUDE_DIR "${pkgs.openssl.dev}/include"
+
+    if set -q PKG_CONFIG_PATH
+        set -gx PKG_CONFIG_PATH "${pkgs.openssl.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
+    else
+        set -gx PKG_CONFIG_PATH "${pkgs.openssl.dev}/lib/pkgconfig"
+    end
+
     status is-interactive; or return
 
     if status is-login

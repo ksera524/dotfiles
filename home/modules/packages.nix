@@ -24,10 +24,11 @@
       tmux
       fish
       hugo
+      vsce
       nodePackages.typescript
       (pkgs."claude-code")
       pkgs.codex
-      pkgs.opencode
+      # pkgs.opencode
     ]
     ++ lib.optionals stdenv.isLinux [
       gcc-unwrapped
@@ -38,6 +39,7 @@
       perl
       nasm
       pkg-config
+      openssl.dev
       openssl
     ];
 }
