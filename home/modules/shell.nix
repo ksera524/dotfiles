@@ -26,6 +26,7 @@
       mv = "mv -i";
       dotfiles-bootstrap = "nix run ~/dotfiles#switch --impure";
       cc = "claude --dangerously-skip-permissions";
+      cx = "codex --yolo";
     };
     initExtra = ''
       export HISTSIZE=10000
@@ -104,6 +105,7 @@
       mv = "mv -i";
       dotfiles-bootstrap = "nix run ~/dotfiles#switch --impure";
       cc = "claude --dangerously-skip-permissions";
+      cx = "codex --yolo";
       cdd = "cd ~/dotfiles";
       cdp = "cd ~/projects";
       gco = "git checkout";
@@ -133,8 +135,6 @@
       set -g pure_enable_virtualenv false
       set -g pure_enable_aws_profile false
       set -g pure_enable_single_line_prompt true
-
-      functions --erase _pure_prompt_git 2>/dev/null
 
       if test -f "$HOME/.config/fish/config.local.fish"
           source "$HOME/.config/fish/config.local.fish"

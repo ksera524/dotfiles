@@ -90,5 +90,6 @@ if [ -f "$HOME/.bashrc.local" ]; then
 fi
 
 alias cc='claude --dangerously-skip-permissions'
+alias cx='codex --yolo'
 
 eval "$(starship init bash)"

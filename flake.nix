@@ -89,6 +89,7 @@
           unstablePkgs = unstableFor system;
         in
         {
+          nodejs_24 = unstablePkgs.nodejs_24;
           "claude-code" = unstablePkgs."claude-code";
           codex = unstablePkgs.codex;
           opencode = unstablePkgs.opencode;

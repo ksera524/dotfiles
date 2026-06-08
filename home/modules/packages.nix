@@ -2,7 +2,7 @@
 {
   home.packages = with pkgs;
     [
-      nodejs
+      nodejs_24
       python312
       go
       (rust-bin.stable.latest.default.override {

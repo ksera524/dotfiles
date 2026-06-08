@@ -14,8 +14,6 @@ set -g pure_enable_virtualenv false
 set -g pure_enable_aws_profile false
 set -g pure_enable_single_line_prompt true
 
-functions --erase _pure_prompt_git 2>/dev/null
-
 # Color settings for ls
 set -gx LSCOLORS GxFxCxDxBxegedabagaced
 set -gx LS_COLORS 'di=1;36:ln=1;35:so=1;32:pi=1;33:ex=1;31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43'
@@ -48,6 +46,7 @@ abbr --add --global mv 'mv -i'
 
 abbr --add --global dotfiles-bootstrap 'cd ~/dotfiles && ./bootstrap.sh'
 abbr --add --global cc 'claude --dangerously-skip-permissions'
+abbr --add --global cx 'codex --yolo'
 
 # Load local configuration if exists
 if test -f "$HOME/.config/fish/config.local.fish"
