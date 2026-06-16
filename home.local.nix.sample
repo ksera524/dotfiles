@@ -13,5 +13,6 @@
   #
   # home.sessionVariables = {
   #   MY_ENV = "value";
+  #   DOTFILES_DIR = "/home/your-user/src/github.com/ksera524/dotfiles";
   # };
 }

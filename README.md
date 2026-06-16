@@ -5,8 +5,9 @@ Nix Flakes + Home Manager で管理する、macOS と Ubuntu (WSL) 向けの dot
 ## クイックスタート
 
 ```bash
-git clone https://github.com/ksera524/dotfiles.git
-cd dotfiles
+mkdir -p ~/src/github.com/ksera524
+git clone https://github.com/ksera524/dotfiles.git ~/src/github.com/ksera524/dotfiles
+cd ~/src/github.com/ksera524/dotfiles
 ./bootstrap.sh
 ```
 
@@ -15,6 +16,8 @@ cd dotfiles
 `bootstrap.sh` は `sudo` ではなく通常ユーザーで実行してください。
 
 `bootstrap.sh` は `scripts/switch.sh` を呼び出し、前提ツールの準備と Home Manager 設定の適用を行います。
+
+このリポジトリは個人用 dotfiles のため、`~/.config/dotfiles/home.local.nix` の local override を優先し、`--impure` を前提にしています。
 
 ## 個人設定
 
@@ -31,6 +34,14 @@ $EDITOR ~/.config/dotfiles/home.local.nix
 programs.git.userName = "Your Name";
 programs.git.userEmail = "you@example.com";
 ```
+
+標準配置は `~/src/github.com/ksera524/dotfiles` です。別の場所に置く場合は local override で `DOTFILES_DIR` を指定してください:
+
+```nix
+home.sessionVariables.DOTFILES_DIR = "/path/to/dotfiles";
+```
+
+追跡対象外の個人設定は `~/.bashrc.local`、`~/.config/fish/config.local.fish`、`~/.config/dotfiles/home.local.nix` に置きます。bash/fish の正本は `home/modules/shell.nix` です。
 
 ## コマンド
 
@@ -97,6 +108,8 @@ nix flake lock --update-input nixpkgs
 
 更新後は `flake.lock` の差分を確認し、問題なければコミットします。
 
+`nodejs_24`、`claude-code`、`codex`、`opencode` は unstable input 由来です。更新時は `nix flake update` 後に CI で Home Manager activation と smoke test を確認します。
+
 Rust を公式 stable の最新へ追従したい場合は、`rust-overlay` も更新します。
 
 ```bash
@@ -105,6 +118,8 @@ nix run .#switch --impure
 rustc --version
 cargo --version
 ```
+
+`Cargo.lock` は global ignore しません。Rust の application/binary crate では lockfile を追跡し、library crate で不要な場合は各リポジトリの `.gitignore` に個別に追加します。
 
 ### 6) 現在の構成で入るバージョン確認
 

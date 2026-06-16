@@ -36,7 +36,6 @@
       ".env"
       ".venv"
       "target/"
-      "Cargo.lock"
       "**/*.rs.bk"
       "dist/"
       "build/"

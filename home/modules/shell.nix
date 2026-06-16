@@ -24,7 +24,6 @@
       rm = "rm -i";
       cp = "cp -i";
       mv = "mv -i";
-      dotfiles-bootstrap = "nix run ~/dotfiles#switch --impure";
       cc = "claude --dangerously-skip-permissions";
       cx = "codex --yolo";
     };
@@ -47,12 +46,42 @@
           fi
       }
 
+      __dotfiles_dir() {
+          local dir
+          dir="''${DOTFILES_DIR:-$HOME/src/github.com/ksera524/dotfiles}"
+          if [ ! -d "$dir" ]; then
+              printf 'Error: DOTFILES_DIR does not exist: %s\n' "$dir" >&2
+              return 1
+          fi
+          printf '%s\n' "$dir"
+      }
+
+      dotfiles-bootstrap() {
+          local dir
+          dir="$(__dotfiles_dir)" || return
+          nix run "$dir#switch" --impure "$@"
+      }
+
+      cdd() {
+          local dir
+          dir="$(__dotfiles_dir)" || return
+          cd "$dir" || return
+      }
+
       dotpush() {
           local current_dir
+          local dir
           current_dir=$(pwd)
-          cd ~/dotfiles || return
+          dir="$(__dotfiles_dir)" || return
+          cd "$dir" || return
 
           git add -A
+          if git diff --cached --quiet; then
+              printf 'No dotfiles changes to push.\n'
+              cd "$current_dir" || return
+              return 0
+          fi
+
           if [ -n "$1" ]; then
               git commit -m "$1"
           else
@@ -67,7 +96,7 @@
           . "$HOME/.bashrc.local"
       fi
 
-      if command -v fish >/dev/null 2>&1 && [[ $(ps --no-header --pid=$PPID --format=comm) != "fish" && -z ''${BASH_EXECUTION_STRING} ]]; then
+      if [[ $- == *i* ]] && command -v fish >/dev/null 2>&1 && [[ "$(ps -p "$PPID" -o comm= 2>/dev/null | tr -d ' ')" != "fish" && -z ''${BASH_EXECUTION_STRING:-} ]]; then
         exec fish
       fi
     '';
@@ -103,10 +132,8 @@
       rm = "rm -i";
       cp = "cp -i";
       mv = "mv -i";
-      dotfiles-bootstrap = "nix run ~/dotfiles#switch --impure";
       cc = "claude --dangerously-skip-permissions";
       cx = "codex --yolo";
-      cdd = "cd ~/dotfiles";
       cdp = "cd ~/projects";
       gco = "git checkout";
       gcb = "git checkout -b";
@@ -147,11 +174,45 @@
             cd "$dest"
         end
       '';
+      __dotfiles_dir = ''
+        set -l dir
+        if set -q DOTFILES_DIR; and test -n "$DOTFILES_DIR"
+            set dir "$DOTFILES_DIR"
+        else
+            set dir "$HOME/src/github.com/ksera524/dotfiles"
+        end
+
+        if not test -d "$dir"
+            printf 'Error: DOTFILES_DIR does not exist: %s\n' "$dir" >&2
+            return 1
+        end
+
+        printf '%s\n' "$dir"
+      '';
+      dotfiles-bootstrap = ''
+        set -l dir (__dotfiles_dir)
+        or return
+        nix run "$dir#switch" --impure $argv
+      '';
+      cdd = ''
+        set -l dir (__dotfiles_dir)
+        or return
+        cd "$dir"
+      '';
       dotpush = ''
         set -l current_dir (pwd)
-        cd ~/dotfiles
+        set -l dir (__dotfiles_dir)
+        or return
+        cd "$dir"
+        or return
 
         git add -A
+
+        if git diff --cached --quiet
+            printf 'No dotfiles changes to push.\n'
+            cd "$current_dir"
+            return 0
+        end
 
         if test -n "$argv[1]"
             git commit -m "$argv[1]"
