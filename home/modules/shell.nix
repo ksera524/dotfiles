@@ -71,11 +71,18 @@
       dotpush() {
           local current_dir
           local dir
+          local status
           current_dir=$(pwd)
           dir="$(__dotfiles_dir)" || return
           cd "$dir" || return
 
           git add -A
+          status=$?
+          if [ "$status" -ne 0 ]; then
+              cd "$current_dir" || return
+              return "$status"
+          fi
+
           if git diff --cached --quiet; then
               printf 'No dotfiles changes to push.\n'
               cd "$current_dir" || return
@@ -87,9 +94,14 @@
           else
               git commit -m "Update dotfiles"
           fi
-          git push
+          status=$?
+          if [ "$status" -eq 0 ]; then
+              git push
+              status=$?
+          fi
 
           cd "$current_dir" || return
+          return "$status"
       }
 
       if [ -f "$HOME/.bashrc.local" ]; then
@@ -207,6 +219,11 @@
         or return
 
         git add -A
+        set -l command_status $status
+        if test "$command_status" -ne 0
+            cd "$current_dir"
+            return "$command_status"
+        end
 
         if git diff --cached --quiet
             printf 'No dotfiles changes to push.\n'
@@ -219,9 +236,15 @@
         else
             git commit -m "Update dotfiles"
         end
+        set command_status $status
 
-        git push
+        if test "$command_status" -eq 0
+            git push
+            set command_status $status
+        end
+
         cd "$current_dir"
+        return "$command_status"
       '';
       __prompt_git_current_repo = ''
         if set -q __prompt_git_last_lookup_pwd; and test "$__prompt_git_last_lookup_pwd" = "$PWD"
