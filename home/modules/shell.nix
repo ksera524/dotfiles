@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   programs.bash = {
     enable = true;
@@ -53,6 +53,10 @@
               printf 'Error: DOTFILES_DIR does not exist: %s\n' "$dir" >&2
               return 1
           fi
+          if [ ! -f "$dir/flake.nix" ]; then
+              printf 'Error: DOTFILES_DIR is not a flake directory: %s\n' "$dir" >&2
+              return 1
+          fi
           printf '%s\n' "$dir"
       }
 
@@ -69,38 +73,32 @@
       }
 
       dotpush() {
-          local current_dir
           local dir
           local status
-          current_dir=$(pwd)
           dir="$(__dotfiles_dir)" || return
-          cd "$dir" || return
 
-          git add -A
+          git -C "$dir" add -A
           status=$?
           if [ "$status" -ne 0 ]; then
-              cd "$current_dir" || return
               return "$status"
           fi
 
-          if git diff --cached --quiet; then
+          if git -C "$dir" diff --cached --quiet; then
               printf 'No dotfiles changes to push.\n'
-              cd "$current_dir" || return
               return 0
           fi
 
           if [ -n "$1" ]; then
-              git commit -m "$1"
+              git -C "$dir" commit -m "$1"
           else
-              git commit -m "Update dotfiles"
+              git -C "$dir" commit -m "Update dotfiles"
           fi
           status=$?
           if [ "$status" -eq 0 ]; then
-              git push
+              git -C "$dir" push
               status=$?
           fi
 
-          cd "$current_dir" || return
           return "$status"
       }
 
@@ -161,6 +159,7 @@
       dcu = "docker compose up";
       dcd = "docker compose down";
       dcl = "docker compose logs";
+    } // lib.optionalAttrs pkgs.stdenv.isLinux {
       update = "sudo apt update && sudo apt upgrade";
       ports = "ss -tuln";
     };
@@ -198,6 +197,10 @@
             printf 'Error: DOTFILES_DIR does not exist: %s\n' "$dir" >&2
             return 1
         end
+        if not test -f "$dir/flake.nix"
+            printf 'Error: DOTFILES_DIR is not a flake directory: %s\n' "$dir" >&2
+            return 1
+        end
 
         printf '%s\n' "$dir"
       '';
@@ -212,38 +215,32 @@
         cd "$dir"
       '';
       dotpush = ''
-        set -l current_dir (pwd)
         set -l dir (__dotfiles_dir)
         or return
-        cd "$dir"
-        or return
 
-        git add -A
+        git -C "$dir" add -A
         set -l command_status $status
         if test "$command_status" -ne 0
-            cd "$current_dir"
             return "$command_status"
         end
 
-        if git diff --cached --quiet
+        if git -C "$dir" diff --cached --quiet
             printf 'No dotfiles changes to push.\n'
-            cd "$current_dir"
             return 0
         end
 
         if test -n "$argv[1]"
-            git commit -m "$argv[1]"
+            git -C "$dir" commit -m "$argv[1]"
         else
-            git commit -m "Update dotfiles"
+            git -C "$dir" commit -m "Update dotfiles"
         end
         set command_status $status
 
         if test "$command_status" -eq 0
-            git push
+            git -C "$dir" push
             set command_status $status
         end
 
-        cd "$current_dir"
         return "$command_status"
       '';
       __prompt_git_current_repo = ''
