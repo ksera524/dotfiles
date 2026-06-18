@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   programs.bash = {
     enable = true;
@@ -24,7 +24,6 @@
       rm = "rm -i";
       cp = "cp -i";
       mv = "mv -i";
-      dotfiles-bootstrap = "nix run ~/dotfiles#switch --impure";
       cc = "claude --dangerously-skip-permissions";
       cx = "codex --yolo";
     };
@@ -47,27 +46,67 @@
           fi
       }
 
-      dotpush() {
-          local current_dir
-          current_dir=$(pwd)
-          cd ~/dotfiles || return
-
-          git add -A
-          if [ -n "$1" ]; then
-              git commit -m "$1"
-          else
-              git commit -m "Update dotfiles"
+      __dotfiles_dir() {
+          local dir
+          dir="''${DOTFILES_DIR:-$HOME/src/github.com/ksera524/dotfiles}"
+          if [ ! -d "$dir" ]; then
+              printf 'Error: DOTFILES_DIR does not exist: %s\n' "$dir" >&2
+              return 1
           fi
-          git push
+          if [ ! -f "$dir/flake.nix" ]; then
+              printf 'Error: DOTFILES_DIR is not a flake directory: %s\n' "$dir" >&2
+              return 1
+          fi
+          printf '%s\n' "$dir"
+      }
 
-          cd "$current_dir" || return
+      dotfiles-bootstrap() {
+          local dir
+          dir="$(__dotfiles_dir)" || return
+          nix run "$dir#switch" --impure "$@"
+      }
+
+      cdd() {
+          local dir
+          dir="$(__dotfiles_dir)" || return
+          cd "$dir" || return
+      }
+
+      dotpush() {
+          local dir
+          local status
+          dir="$(__dotfiles_dir)" || return
+
+          git -C "$dir" add -A
+          status=$?
+          if [ "$status" -ne 0 ]; then
+              return "$status"
+          fi
+
+          if git -C "$dir" diff --cached --quiet; then
+              printf 'No dotfiles changes to push.\n'
+              return 0
+          fi
+
+          if [ -n "$1" ]; then
+              git -C "$dir" commit -m "$1"
+          else
+              git -C "$dir" commit -m "Update dotfiles"
+          fi
+          status=$?
+          if [ "$status" -eq 0 ]; then
+              git -C "$dir" push
+              status=$?
+          fi
+
+          return "$status"
       }
 
       if [ -f "$HOME/.bashrc.local" ]; then
           . "$HOME/.bashrc.local"
       fi
 
-      if command -v fish >/dev/null 2>&1 && [[ $(ps --no-header --pid=$PPID --format=comm) != "fish" && -z ''${BASH_EXECUTION_STRING} ]]; then
+      if [[ $- == *i* ]] && command -v fish >/dev/null 2>&1 && [[ "$(ps -p "$PPID" -o comm= 2>/dev/null | tr -d ' ')" != "fish" && -z ''${BASH_EXECUTION_STRING:-} ]]; then
         exec fish
       fi
     '';
@@ -103,10 +142,8 @@
       rm = "rm -i";
       cp = "cp -i";
       mv = "mv -i";
-      dotfiles-bootstrap = "nix run ~/dotfiles#switch --impure";
       cc = "claude --dangerously-skip-permissions";
       cx = "codex --yolo";
-      cdd = "cd ~/dotfiles";
       cdp = "cd ~/projects";
       gco = "git checkout";
       gcb = "git checkout -b";
@@ -122,6 +159,7 @@
       dcu = "docker compose up";
       dcd = "docker compose down";
       dcl = "docker compose logs";
+    } // lib.optionalAttrs pkgs.stdenv.isLinux {
       update = "sudo apt update && sudo apt upgrade";
       ports = "ss -tuln";
     };
@@ -147,20 +185,63 @@
             cd "$dest"
         end
       '';
-      dotpush = ''
-        set -l current_dir (pwd)
-        cd ~/dotfiles
-
-        git add -A
-
-        if test -n "$argv[1]"
-            git commit -m "$argv[1]"
+      __dotfiles_dir = ''
+        set -l dir
+        if set -q DOTFILES_DIR; and test -n "$DOTFILES_DIR"
+            set dir "$DOTFILES_DIR"
         else
-            git commit -m "Update dotfiles"
+            set dir "$HOME/src/github.com/ksera524/dotfiles"
         end
 
-        git push
-        cd "$current_dir"
+        if not test -d "$dir"
+            printf 'Error: DOTFILES_DIR does not exist: %s\n' "$dir" >&2
+            return 1
+        end
+        if not test -f "$dir/flake.nix"
+            printf 'Error: DOTFILES_DIR is not a flake directory: %s\n' "$dir" >&2
+            return 1
+        end
+
+        printf '%s\n' "$dir"
+      '';
+      dotfiles-bootstrap = ''
+        set -l dir (__dotfiles_dir)
+        or return
+        nix run "$dir#switch" --impure $argv
+      '';
+      cdd = ''
+        set -l dir (__dotfiles_dir)
+        or return
+        cd "$dir"
+      '';
+      dotpush = ''
+        set -l dir (__dotfiles_dir)
+        or return
+
+        git -C "$dir" add -A
+        set -l command_status $status
+        if test "$command_status" -ne 0
+            return "$command_status"
+        end
+
+        if git -C "$dir" diff --cached --quiet
+            printf 'No dotfiles changes to push.\n'
+            return 0
+        end
+
+        if test -n "$argv[1]"
+            git -C "$dir" commit -m "$argv[1]"
+        else
+            git -C "$dir" commit -m "Update dotfiles"
+        end
+        set command_status $status
+
+        if test "$command_status" -eq 0
+            git -C "$dir" push
+            set command_status $status
+        end
+
+        return "$command_status"
       '';
       __prompt_git_current_repo = ''
         if set -q __prompt_git_last_lookup_pwd; and test "$__prompt_git_last_lookup_pwd" = "$PWD"

@@ -2,14 +2,22 @@ name: ci
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+  schedule:
+    - cron: "0 18 * * 0"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   bootstrap-e2e:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -30,6 +38,30 @@ jobs:
           home-manager generations
           fish --version
           fish -c 'echo ok'
+          bash -lc 'echo ok'
+
+  bootstrap-e2e-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run bootstrap end-to-end
+        run: |
+          set -euo pipefail
+          ./bootstrap.sh
+
+      - name: Verify bootstrap results
+        run: |
+          set -euo pipefail
+          if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+            # shellcheck disable=SC1091
+            source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+          fi
+          home-manager generations
+          fish --version
+          fish -c 'echo ok'
+          bash -lc 'echo ok'
 
   nix-home-manager:
     strategy:
@@ -65,10 +97,12 @@ jobs:
           go version
           rg --version
           jq --version
-          tsc --version || true
+          git config --file "$HOME/.config/git/config" --get init.defaultBranch
+          tsc --version
 
-      - name: Verify fish shell works
+      - name: Verify shells work
         run: |
           set -euo pipefail
           fish --version
           fish -c 'echo ok'
+          bash -lc 'echo ok'

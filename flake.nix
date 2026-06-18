@@ -29,6 +29,8 @@
           config.allowUnfree = true;
         };
 
+      # Keep ghq pinned to the upstream binary so Linux and macOS use the same
+      # known-good release even when nixpkgs carries a different version.
       overlayGhqBinary = system: final: prev: {
         ghq = prev.stdenvNoCC.mkDerivation (finalAttrs: let
           assets = {

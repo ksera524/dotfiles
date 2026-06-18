@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 let
   envHome = builtins.getEnv "HOME";
   localConfigPath =
@@ -21,6 +21,7 @@ in
     EDITOR = "vim";
     VISUAL = "vim";
     NODE_ENV = "development";
+    DOTFILES_DIR = lib.mkDefault "${config.home.homeDirectory}/src/github.com/ksera524/dotfiles";
   };
 
   xdg.enable = true;

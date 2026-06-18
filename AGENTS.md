@@ -8,8 +8,6 @@ This repository is a WSL (Ubuntu) and macOS dotfiles setup managed by Nix Flakes
 - `flake.nix` / `flake.lock`: flake inputs, app entrypoints, and lockfile.
 - `home/`: Home Manager modules (`common.nix`, `linux.nix`, `darwin.nix`, `modules/`).
 - `home.local.nix.sample`: local, machine-specific overrides template.
-- `bash/`: Bash configuration (`bashrc`).
-- `fish/`: Fish shell config (`config.fish`, `conf.d/`, `functions/`).
 - `git/`: Git config and global ignore.
 - `.vscode/`: VS Code settings and extensions list.
 - `.github/workflows/`: CI workflow (flake check + Home Manager switch).
@@ -21,7 +19,6 @@ This repository is a WSL (Ubuntu) and macOS dotfiles setup managed by Nix Flakes
 
 ## Coding Style & Naming Conventions
 - Shell scripts: follow existing style (2-space indent in `bootstrap.sh`).
-- Fish scripts: follow existing style (4-space indent in `fish/` files).
 - Keep paths relative to `$HOME` (avoid hardcoded absolute usernames).
 - No dedicated formatter or linter; keep changes minimal and consistent with surrounding files.
 
@@ -45,3 +42,4 @@ PRs should include:
 - WSL and macOS are supported.
 - macOS requires Xcode Command Line Tools (`xcode-select --install`).
 - Run bootstrap/switch as a normal user, not with `sudo`.
+- Home Manager is the source of truth for shell config. Put personal overrides in `~/.bashrc.local`, `~/.config/fish/config.local.fish`, or `~/.config/dotfiles/home.local.nix`.
