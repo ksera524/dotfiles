@@ -50,6 +50,86 @@ home.sessionVariables.DOTFILES_DIR = "/path/to/dotfiles";
 - VS Code 設定と推奨拡張 JSON のシンボリックリンクを更新: `nix run .#switch --impure`
 - bootstrap ラッパーを再実行: `./scripts/switch.sh`
 
+## カスタムコマンドと alias
+
+### カスタムコマンド
+
+| コマンド | 説明 |
+| --- | --- |
+| `ghq-cd` | `ghq list -p` の結果を `fzf` で選択して、そのリポジトリへ移動します。 |
+| `dotfiles-bootstrap` | `DOTFILES_DIR`、または既定の `~/src/github.com/ksera524/dotfiles` で `nix run <dotfiles>#switch --impure` を実行します。 |
+| `cdd` | dotfiles リポジトリへ移動します。 |
+| `dotpush [message]` | dotfiles リポジトリの変更を `git add -A` し、指定メッセージまたは `Update dotfiles` で commit して push します。 |
+
+### shell alias / abbreviation
+
+fish では abbreviation、bash では alias として定義しています。通常は対話型 bash から fish に入るため、fish 側の定義が主に使われます。
+
+| 名前 | 展開先 | 対象 |
+| --- | --- | --- |
+| `ll` | `ls -alF` | bash / fish |
+| `la` | `ls -A` | bash / fish |
+| `l` | `ls -CF` | bash / fish |
+| `..` | `cd ..` | bash / fish |
+| `...` | `cd ../..` | bash / fish |
+| `....` | `cd ../../..` | bash / fish |
+| `ls` | `eza` | bash / fish |
+| `cat` | `bat` | bash / fish |
+| `find` | `fd` | bash / fish |
+| `grep` | `rg` | bash / fish |
+| `gs` | `git status` | bash / fish |
+| `ga` | `git add` | bash / fish |
+| `gc` | `git commit` | bash / fish |
+| `gd` | `git diff` | bash / fish |
+| `gl` | `git log --oneline --graph --decorate` | bash / fish |
+| `gp` | `git push` | bash / fish |
+| `gpl` | `git pull` | bash / fish |
+| `rm` | `rm -i` | bash / fish |
+| `cp` | `cp -i` | bash / fish |
+| `mv` | `mv -i` | bash / fish |
+| `cc` | `claude --dangerously-skip-permissions` | bash / fish |
+| `cx` | `codex --yolo` | bash / fish |
+| `gq` | `ghq-cd` | fish |
+| `cdp` | `cd ~/projects` | fish |
+| `gco` | `git checkout` | fish |
+| `gcb` | `git checkout -b` | fish |
+| `gcm` | `git commit -m` | fish |
+| `gca` | `git commit --amend` | fish |
+| `grb` | `git rebase` | fish |
+| `gst` | `git stash` | fish |
+| `gstp` | `git stash pop` | fish |
+| `dps` | `docker ps` | fish |
+| `dpsa` | `docker ps -a` | fish |
+| `di` | `docker images` | fish |
+| `dc` | `docker compose` | fish |
+| `dcu` | `docker compose up` | fish |
+| `dcd` | `docker compose down` | fish |
+| `dcl` | `docker compose logs` | fish |
+| `update` | `sudo apt update && sudo apt upgrade` | fish / Linux |
+| `ports` | `ss -tuln` | fish / Linux |
+
+### Git alias
+
+| alias | 展開先 |
+| --- | --- |
+| `git st` | `git status` |
+| `git co` | `git checkout` |
+| `git br` | `git branch` |
+| `git cm` | `git commit` |
+| `git df` | `git diff` |
+| `git lg` | `git log --oneline --graph --decorate` |
+| `git unstage` | `git reset HEAD --` |
+| `git last` | `git log -1 HEAD` |
+| `git visual` | `gitk` |
+| `git amend` | `git commit --amend` |
+| `git undo` | `git reset --soft HEAD~1` |
+| `git branches` | `git branch -a` |
+| `git remotes` | `git remote -v` |
+| `git tags` | `git tag -l` |
+| `git hist` | `git log --pretty=format:'%h %ad \| %s%d [%an]' --graph --date=short` |
+| `git tree` | `git log --graph --pretty=format:'%C(yellow)%h%C(reset) - %C(green)%ad%C(reset) - %C(blue)%an%C(reset)%C(red)%d%C(reset) %s' --date=short --all` |
+| `git contributors` | `git shortlog --summary --numbered` |
+
 ## Nixの使い方（このリポジトリ）
 
 ### 1) ツールを追加する
