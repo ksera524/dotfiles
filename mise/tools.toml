@@ -4,6 +4,7 @@ python = "latest"
 go = "latest"
 rust = { version = "stable", profile = "default", components = ["rust-src", "rustfmt", "clippy"] }
 gh = "latest"
+kubectl = "latest"
 ripgrep = "latest"
 fd = "latest"
 bat = "latest"
