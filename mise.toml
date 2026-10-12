@@ -41,7 +41,9 @@ deb [signed-by=/etc/apt/keyrings/dotfiles-tailscale.asc] https://pkgs.tailscale.
 """
 
 [bootstrap.repos]
-"~/.local/share/fish/plugins/pure" = { url = "https://github.com/pure-fish/pure.git", ref = "v4.19.0" }
+# Pure v4.19.0, pinned to its commit so status can compare locally.
+# mise 2026.10.8 compares annotated tag objects against HEAD and reports differs.
+"~/.local/share/fish/plugins/pure" = { url = "https://github.com/pure-fish/pure.git", ref = "8c08b26425f17e9d25a95a70c43ef632156250ea" }
 
 [bootstrap.hooks]
 # Fish must exist before bootstrap.user changes the login shell.
