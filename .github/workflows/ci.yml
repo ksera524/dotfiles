@@ -58,10 +58,11 @@ jobs:
           mise bootstrap status --missing
           mise bootstrap dotfiles status --missing
           mise bootstrap --only dotfiles,mise-shell-activate --yes
+          set -x
           for startup in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.config/fish/config.fish"; do
             test ! -L "$startup"
             test "$(grep -c '^# dotfiles-ci-preserve$' "$startup")" = 1
             test "$(grep -c '^# >>> mise:activate >>>' "$startup")" = 1
           done
-          bash -lic 'alias gs && type cdd && node --version'
+          bash -lixc 'alias gs && type cdd && node --version'
           fish -ic 'functions -q gs; and functions -q cdd; and node --version'
