@@ -37,6 +37,19 @@ main() {
   repo_dir="$dotfiles_root/github.com/ksera524/dotfiles"
   export DOTFILES_ROOT="$dotfiles_root"
 
+  # Fresh Ubuntu homes already contain a regular .bashrc. Preserve shell
+  # startup files before mise replaces them; leave managed symlinks alone.
+  local startup_file backup_dir=""
+  for startup_file in .bashrc .bash_profile; do
+    if [ -f "$HOME/$startup_file" ] && [ ! -L "$HOME/$startup_file" ]; then
+      if [ -z "$backup_dir" ]; then
+        backup_dir="$(mktemp -d "$HOME/.dotfiles-backup.XXXXXXXX")"
+        printf 'Backing up shell startup files to %s\n' "$backup_dir"
+      fi
+      mv "$HOME/$startup_file" "$backup_dir/$startup_file"
+    fi
+  done
+
   # mise installs missing Git, validates/reuses the checkout, and trusts it.
   "$mise_bin" bootstrap \
     --from https://github.com/ksera524/dotfiles.git \

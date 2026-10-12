@@ -10,6 +10,8 @@ curl と Bash があれば、次のコマンドで mise・Git の導入、clone�
 curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/install.sh | bash
 ```
 
+`install.sh` は既存の通常ファイル `~/.bashrc`・`~/.bash_profile` を、一意な `~/.dotfiles-backup.XXXXXXXX/` に退避してから適用します。退避先は実行時に表示します。個人設定は退避ファイルから `~/.bashrc.local` に移してください。管理済みのシンボリックリンクは退避しません。ほかの配置先に通常ファイルがある場合は、事前にバックアップして退避してください。
+
 clone 先は `<ルート>/github.com/ksera524/dotfiles` です。ルートは既存の `ghq.root` を使い、未設定なら `~/src` になります。任意のルートを指定する場合:
 
 ```bash
@@ -18,7 +20,7 @@ curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/install.sh |
 
 選択したルートは `~/.gitconfig.local` の `ghq.root` に保存するため、導入後も ghq で管理できます。既存の checkout は mise が再利用し、`--update` で fast-forward 更新します。別リポジトリや衝突するディレクトリは mise が拒否します。Home Manager から移行する場合は、先に下記の退避手順を行ってください。
 
-手動で clone 済みの場合は、リポジトリ内で `bash install.sh` も実行できます (選択した配置先を使います)。mise を導入済みなら、設定を直接適用できます:
+手動で clone 済みの場合は、リポジトリ内で `bash install.sh` も実行できます (選択した配置先を使います)。mise を導入済みなら、設定を直接適用できます。この場合、自動退避は行わないため、既存の通常ファイル `~/.bashrc`・`~/.bash_profile` などを先に退避してください:
 
 ```bash
 mise trust
