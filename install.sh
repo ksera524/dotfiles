@@ -30,30 +30,10 @@ main() {
   local mise_bin="$HOME/.local/bin/mise"
   export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
-  local dotfiles_root repo_dir
-  dotfiles_root="${DOTFILES_ROOT:-$(git config --path --get ghq.root 2>/dev/null || printf '%s' "$HOME/src")}"
-  mkdir -p "$dotfiles_root"
-  dotfiles_root="$(cd "$dotfiles_root" && pwd -P)"
-  repo_dir="$dotfiles_root/github.com/ksera524/dotfiles"
-  export DOTFILES_ROOT="$dotfiles_root"
-
-  # Fresh Ubuntu homes already contain a regular .bashrc. Preserve shell
-  # startup files before mise replaces them; leave managed symlinks alone.
-  local startup_file backup_dir=""
-  for startup_file in .bashrc .bash_profile; do
-    if [ -f "$HOME/$startup_file" ] && [ ! -L "$HOME/$startup_file" ]; then
-      if [ -z "$backup_dir" ]; then
-        backup_dir="$(mktemp -d "$HOME/.dotfiles-backup.XXXXXXXX")"
-        printf 'Backing up shell startup files to %s\n' "$backup_dir"
-      fi
-      mv "$HOME/$startup_file" "$backup_dir/$startup_file"
-    fi
-  done
-
   # mise installs missing Git, validates/reuses the checkout, and trusts it.
   "$mise_bin" bootstrap \
     --from https://github.com/ksera524/dotfiles.git \
-    --from-dir "$repo_dir" --yes --update
+    --from-dir "$HOME/src/github.com/ksera524/dotfiles" --yes --update
 }
 
 # Parse the entire function before commands run, including when piped into Bash.

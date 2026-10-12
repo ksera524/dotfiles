@@ -1,7 +1,3 @@
-[tasks.bootstrap]
-description = "Save machine-specific setup not covered by declarations"
-run = 'if [ -n "${DOTFILES_ROOT:-}" ]; then git config --file "$HOME/.gitconfig.local" ghq.root "$DOTFILES_ROOT"; fi'
-
 [tasks."bootstrap:host-packages"]
 description = "Install host packages for Intel Macs unsupported by the built-in brew manager"
 run = 'if [ "$(uname -sm)" = "Darwin x86_64" ]; then brew install git vim fish tmux pkgconf openssl@3; fi'

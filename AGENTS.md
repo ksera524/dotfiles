@@ -2,9 +2,10 @@
 
 ## Project Structure & Module Organization
 This repository is an Ubuntu (WSL) and macOS dotfiles setup managed by mise:
-- `install.sh`: piped mise installer and ghq-root selection; mise bootstrap --from manages Git/clone/trust.
+- `install.sh`: piped mise installer with a fixed ~/src checkout; mise bootstrap --from manages Git/clone/trust.
 - `mise.toml`: entrypoint, includes, bootstrap files/repos/hooks, and dotfile links.
 - `mise/tools.toml` / `mise/packages.toml`: runtime/CLI tools and apt/brew packages.
+- `mise/aliases.toml`: shared Bash/Fish aliases. Startup files use dotfile edits and bootstrap.mise_shell_activate.
 - `mise/conf.d/platform/`: OS/architecture-specific environment and login shells.
 - `mise/conf.d/tasks/mise.toml`: bootstrap helper tasks.
 - `mise/tracking.toml`: global track-mode declarations for local overrides and SSH config; no remote or watcher is configured.
@@ -32,7 +33,7 @@ This repository is an Ubuntu (WSL) and macOS dotfiles setup managed by mise:
 
 ## Coding Style & Naming Conventions
 - Prefer declarative mise env/dotfiles/packages/repos/user over custom installation scripts.
-- Keep shared environment and PATH definitions in mise; shell files should focus on activation, abbreviations, prompts, and functions.
+- Keep shared environment and PATH definitions in mise; shell files should focus on abbreviations, prompts, and functions. Use bootstrap.mise_shell_activate for activation and shell_alias for shared aliases.
 - Put non-declarative setup in bootstrap:* tasks. Hooks should only invoke tasks at required phases with --skip-tools; the bootstrap task runs last.
 - Bash uses 2-space indentation; Fish uses 4 spaces.
 - Keep home paths relative to `$HOME` or `~/`; avoid hardcoded usernames.
@@ -44,7 +45,8 @@ CI runs bootstrap on disposable hosted runners with --force-dotfiles, applying o
 without a PAM password prompt. It then checks
 `mise bootstrap status --missing` and
 `mise bootstrap dotfiles status --missing`. Any declared state that differs
-fails CI. These checks do not exercise shell startup or tool behavior.
+fails CI. CI also checks startup-file preservation and idempotence, then starts
+Bash/Fish to verify shared aliases, functions, and Node.
 OS package installation modifies the CI runner. Locally, use an isolated home
 for deployment tests to avoid changing the user's configuration.
 See README.md for syntax checks and migration instructions.

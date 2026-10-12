@@ -1,6 +1,6 @@
 # Dotfiles
 
-mise で管理する Ubuntu (WSL)・macOS 向けの dotfiles です。開発ツール、OS パッケージ、Pure の取得、設定ファイルのリンクを `mise bootstrap` で適用します。`install.sh` は mise の導入と配置ルートの選択を担当し、Git の準備・clone・環境設定は `mise bootstrap --from` に任せます。
+mise で管理する Ubuntu (WSL)・macOS 向けの dotfiles です。開発ツール、OS パッケージ、Pure の取得、設定ファイルのリンクを `mise bootstrap` で適用します。`install.sh` は mise の導入を担当し、Git の準備・clone・環境設定は `mise bootstrap --from` に任せます。
 
 ## 初回セットアップ
 
@@ -10,17 +10,11 @@ curl と Bash があれば、次のコマンドで mise・Git の導入、clone�
 curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/install.sh | bash
 ```
 
-`install.sh` は既存の通常ファイル `~/.bashrc`・`~/.bash_profile` を、一意な `~/.dotfiles-backup.XXXXXXXX/` に退避してから適用します。退避先は実行時に表示します。個人設定は退避ファイルから `~/.bashrc.local` に移してください。管理済みのシンボリックリンクは退避しません。ほかの配置先に通常ファイルがある場合は、事前にバックアップして退避してください。
+clone 先は `~/src/github.com/ksera524/dotfiles` に統一しています。既存の checkout は mise が再利用し、`--update` で fast-forward 更新します。別リポジトリや衝突するディレクトリは mise が拒否します。
 
-clone 先は `<ルート>/github.com/ksera524/dotfiles` です。ルートは既存の `ghq.root` を使い、未設定なら `~/src` になります。任意のルートを指定する場合:
+Bash・Fish の起動ファイルは mise の部分編集で管理します。既存の通常ファイルを保持し、共有設定の読み込みと activation を追加するため、Ubuntu 標準の `.bashrc` も退避不要です。Home Manager の旧リンクは、先に下記の移行手順で退避してください。Git・VS Code など全体をリンクする配置先の通常ファイルは、事前に退避が必要です。
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/install.sh | DOTFILES_ROOT="$HOME/work" bash
-```
-
-選択したルートは `~/.gitconfig.local` の `ghq.root` に保存するため、導入後も ghq で管理できます。既存の checkout は mise が再利用し、`--update` で fast-forward 更新します。別リポジトリや衝突するディレクトリは mise が拒否します。Home Manager から移行する場合は、先に下記の退避手順を行ってください。
-
-手動で clone 済みの場合は、リポジトリ内で `bash install.sh` も実行できます (選択した配置先を使います)。mise を導入済みなら、設定を直接適用できます。この場合、自動退避は行わないため、既存の通常ファイル `~/.bashrc`・`~/.bash_profile` などを先に退避してください:
+手動で clone 済み・mise 導入済みの場合は、任意の配置先で直接適用できます (`install.sh` は常に上記の標準配置先を使います):
 
 ```bash
 mise trust
@@ -141,7 +135,11 @@ mise bootstrap --from https://github.com/ksera524/dotfiles.git \
 
 フックには適用順を指定するタスク呼び出しだけを置きます。初期セットアップの途中で開発ツールを先にインストールしないよう、呼び出しには `mise run --skip-tools` を使います。通常の `bootstrap` タスクは全体の最後なので、Fish 導入のように順序が必要な処理は対応するフェーズで実行します。
 
-Bash / Fish に残すのは mise の読み込み、alias / abbreviation、プロンプト、シェル自身を操作する関数です。現在の mise で全ファイルを管理する dotfiles と併用するため、activation はそれぞれのシェル設定に記述しています。
+Bash / Fish に残すのは履歴設定、Fish 固有の abbreviation、プロンプト、シェル自身を操作する関数です。共通 alias は `mise/aliases.toml` の `[shell_alias]` に集約しています。
+
+起動ファイルへの共有設定の読み込みは `[dotfiles]` の部分編集、activation は `[bootstrap.mise_shell_activate]` に任せます。mise 起動前に必要な PATH だけを先頭に追加します。Bash のログインシェルには標準機能で shims が入り、非対話処理でプロジェクトに応じたツールを選べます。非対話処理でも mise の環境変数が必要な場合は `mise exec -- <command>` を使います。
+
+この PR の旧構成を適用済みの場合は、`~/.bashrc`・`~/.bash_profile`・`~/.config/fish/config.fish` のリポジトリへのリンクを退避してから再適用してください。部分編集先が共有ファイルを指したままにならないようにします。
 
 ## 日常の操作
 
@@ -197,7 +195,7 @@ Pure v4.19.0 は `[bootstrap.repos]` で取得し、mise dotfiles で配置し�
 | `cdd` | dotfiles へ移動 |
 | `dotpush [message]` | dotfiles の変更を add・commit・push |
 
-従来の Bash alias / Fish abbreviation と Git alias を維持します。`ls` → eza、`cat` → bat、`find` → fd、`grep` → rg、`cc` → Claude Code、`cx` → Codex も利用できます。WSL は `wslview` がインストール済みならブラウザー起動に使い、それ以外は `xdg-open` を使います。
+共通ショートカットは Bash / Fish とも mise の alias として利用できます。共通分の Fish abbreviation は alias に変更したため、入力時の文字列展開は行いません。Fish 固有の abbreviation と Git alias は維持します。`ls` → eza、`cat` → bat、`find` → fd、`grep` → rg、`cc` → Claude Code、`cx` → Codex も利用できます。WSL は `wslview` がインストール済みならブラウザー起動に使い、それ以外は `xdg-open` を使います。
 
 ## 構成と検証
 
@@ -233,13 +231,13 @@ for file in shell/fish/config.fish shell/fish/conf.d/*.fish shell/fish/functions
 done
 ```
 
-CI は使い捨ての GitHub ホスト runner で bootstrap を実行し、次の状態確認で乖離があれば失敗します。runner の既定のシェル設定を置き換えるため、CI のみ `--force-dotfiles` を付けます。パッケージ・dotfiles は通常ユーザーで適用し、ログインシェルだけは CI のパスワード入力を避けるため `sudo mise bootstrap user apply` で元の runner ユーザーに適用します。
+CI は使い捨ての GitHub ホスト runner で bootstrap を実行し、次の状態確認で乖離があれば失敗します。runner 上で競合する他の dotfiles を置き換えるため、CI のみ `--force-dotfiles` を付けます。Bash・Fish の起動ファイルは部分編集で保持します。パッケージ・dotfiles は通常ユーザーで適用し、ログインシェルだけは CI のパスワード入力を避けるため `sudo mise bootstrap user apply` で元の runner ユーザーに適用します。
 
 ```bash
 mise bootstrap status --missing
 mise bootstrap dotfiles status --missing
 ```
 
-`mise bootstrap status` は全ステップの状態を表示します。CI では `--missing` を付け、未導入・未適用も終了コード 1 にします。状態確認はシェルやツールの実際の起動までは検証しません。OS パッケージは runner に導入されます。Docker の導入は検証対象です。ユーザー権限設定と Tailscale の認証は対象外です。
+`mise bootstrap status` は全ステップの状態を表示します。CI では `--missing` を付け、未導入・未適用も終了コード 1 にします。状態確認に加え、起動ファイルの既存内容と再適用時の冪等性、Bash・Fish の共通 alias・関数・Node の起動を確認します。OS パッケージは runner に導入されます。Docker の導入は検証対象です。ユーザー権限設定と Tailscale の認証は対象外です。
 
 仕様: [mise bootstrap](https://mise.jdx.dev/bootstrap.html) / [mise dotfiles](https://mise.jdx.dev/dotfiles.html) / [conf.d フォルダ](https://mise.jdx.dev/configuration.html#conf-d-folders)。

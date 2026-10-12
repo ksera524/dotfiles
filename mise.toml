@@ -1,5 +1,5 @@
 min_version = "2026.10.8"
-include = ["mise/tools.toml", "mise/packages.toml"]
+include = ["mise/tools.toml", "mise/packages.toml", "mise/aliases.toml"]
 
 [env]
 EDITOR = "vim"
@@ -49,6 +49,10 @@ deb [signed-by=/etc/apt/keyrings/dotfiles-tailscale.asc] https://pkgs.tailscale.
 # Fish must exist before bootstrap.user changes the login shell.
 pre-packages = '"{{ mise_bin }}" -C "{{ config_root }}" run --skip-tools bootstrap:host-packages'
 
+[bootstrap.mise_shell_activate]
+bash = true
+fish = true
+
 [dotfiles]
 # conf.d folders retain relative source paths and load tools in every directory.
 "~/.config/mise/conf.d/dotfiles" = { source = "." }
@@ -56,9 +60,13 @@ pre-packages = '"{{ mise_bin }}" -C "{{ config_root }}" run --skip-tools bootstr
 "~/.config/mise/conf.d/dotfiles-tasks" = { source = "mise/conf.d/tasks" }
 "~/.config/mise/miserc.toml" = { source = ".miserc.toml" }
 "~/.config/mise/conf.d/dotfiles-tracking.toml" = { source = "mise/tracking.toml" }
-"~/.bashrc" = { source = "shell/bashrc" }
-"~/.bash_profile" = { source = "shell/bash_profile" }
-"~/.config/fish/config.fish" = { source = "shell/fish/config.fish" }
+# Edit startup files in place; existing user/OS settings stay outside our blocks.
+"~/.bashrc/dotfiles-path" = { line = 'export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"', position = "prepend" }
+"~/.bash_profile/dotfiles-path" = { line = 'export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"', position = "prepend" }
+"~/.bashrc/dotfiles-config" = { block = '. "$HOME/.config/mise/conf.d/dotfiles/shell/bashrc"' }
+"~/.bash_profile/dotfiles-config" = { source = "shell/bash_profile", template = "tera" }
+"~/.config/fish/config.fish/dotfiles-path" = { line = 'fish_add_path --path "$HOME/.local/bin" /opt/homebrew/bin /usr/local/bin', position = "prepend" }
+"~/.config/fish/config.fish/dotfiles-config" = { block = 'source "$HOME/.config/mise/conf.d/dotfiles/shell/fish/config.fish"' }
 "~/.config/fish/dotfiles-functions" = { source = "shell/fish/functions" }
 "~/.config/fish/conf.d/00-pure-path.fish" = { source = "shell/fish/conf.d/00-pure-path.fish" }
 "~/.config/fish/conf.d/prompt-git-cache.fish" = { source = "shell/fish/conf.d/prompt-git-cache.fish" }

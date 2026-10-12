@@ -45,10 +45,23 @@ jobs:
         shell: bash
         run: |
           mise trust
-          # Hosted runners are disposable; replace their default shell dotfiles.
+          # Keep ordinary startup files, including the Ubuntu default .bashrc.
+          mkdir -p "$HOME/.config/fish"
+          echo '# dotfiles-ci-preserve' >> "$HOME/.bashrc"
+          echo '# dotfiles-ci-preserve' >> "$HOME/.bash_profile"
+          echo '# dotfiles-ci-preserve' >> "$HOME/.config/fish/config.fish"
+          # Hosted runners are disposable; replace other conflicting dotfiles.
           mise bootstrap --yes --update --force-dotfiles --skip user
           # Apply only the login shell with sudo, targeting the original SUDO_USER.
           # Keep root from recording history using its own HOME in the user's store.
           sudo --preserve-env=MISE_STATE_DIR env MISE_HISTORY_ENABLED=false "$(command -v mise)" -C "$PWD" bootstrap user apply --yes
           mise bootstrap status --missing
           mise bootstrap dotfiles status --missing
+          mise bootstrap --only dotfiles,mise-shell-activate --yes
+          for startup in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.config/fish/config.fish"; do
+            test ! -L "$startup"
+            test "$(grep -c '^# dotfiles-ci-preserve$' "$startup")" = 1
+            test "$(grep -c '^# >>> mise:activate >>>' "$startup")" = 1
+          done
+          bash -lic 'alias gs && type cdd && node --version'
+          fish -ic 'functions -q gs; and functions -q cdd; and node --version'

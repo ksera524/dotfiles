@@ -1,13 +1,3 @@
-fish_add_path --path "$HOME/.local/bin" /opt/homebrew/bin /usr/local/bin
-
-if command -q mise
-    if status is-interactive
-        mise activate fish | source
-    else
-        mise env --shell fish | source
-    end
-end
-
 status is-interactive; or return
 
 set -g fish_greeting
@@ -20,29 +10,7 @@ set -g pure_enable_virtualenv false
 set -g pure_enable_aws_profile false
 set -g pure_enable_single_line_prompt true
 
-abbr --add ll 'ls -alF'
-abbr --add la 'ls -A'
-abbr --add l 'ls -CF'
-abbr --add .. 'cd ..'
-abbr --add ... 'cd ../..'
-abbr --add .... 'cd ../../..'
-abbr --add ls eza
-abbr --add cat bat
-abbr --add find fd
-abbr --add grep rg
 abbr --add gq ghq-cd
-abbr --add gs 'git status'
-abbr --add ga 'git add'
-abbr --add gc 'git commit'
-abbr --add gd 'git diff'
-abbr --add gl 'git log --oneline --graph --decorate'
-abbr --add gp 'git push'
-abbr --add gpl 'git pull'
-abbr --add rm 'rm -i'
-abbr --add cp 'cp -i'
-abbr --add mv 'mv -i'
-abbr --add cc 'claude --dangerously-skip-permissions'
-abbr --add cx 'codex --yolo'
 abbr --add cdp 'cd ~/projects'
 abbr --add gco 'git checkout'
 abbr --add gcb 'git checkout -b'

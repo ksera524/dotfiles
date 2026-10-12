@@ -1,42 +1,9 @@
-export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
-
-if command -v mise >/dev/null 2>&1; then
-  if [[ $- == *i* ]]; then
-    eval "$(mise activate bash)"
-  else
-    eval "$(mise env --shell bash)"
-  fi
-fi
-
 [[ $- == *i* ]] || return
 
 export HISTSIZE=10000
 export HISTFILESIZE=20000
 export HISTCONTROL=ignoreboth:erasedups
 shopt -s histappend checkwinsize
-
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-alias ls='eza'
-alias cat='bat'
-alias find='fd'
-alias grep='rg'
-alias gs='git status'
-alias ga='git add'
-alias gc='git commit'
-alias gd='git diff'
-alias gl='git log --oneline --graph --decorate'
-alias gp='git push'
-alias gpl='git pull'
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
-alias cc='claude --dangerously-skip-permissions'
-alias cx='codex --yolo'
 
 ghq-cd() {
   local dest
