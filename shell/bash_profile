@@ -1,0 +1,4 @@
+# Login shells (including macOS terminals) use the same configuration.
+if [ -f "$HOME/.bashrc" ]; then
+  . "$HOME/.bashrc"
+fi

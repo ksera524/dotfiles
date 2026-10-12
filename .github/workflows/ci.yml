@@ -8,101 +8,47 @@ on:
   schedule:
     - cron: "0 18 * * 0"
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  bootstrap-e2e:
+  bootstrap:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, macos-15-intel]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Run bootstrap end-to-end
+      - name: Install mise
+        uses: jdx/mise-action@v5
+        with:
+          version: "2026.10.8"
+          install: false
+          cache: false
+          env: false
+          export_path: false
+          add_shims_to_path: false
+
+      - name: Bootstrap and check status
+        env:
+          MISE_GITHUB_TOKEN: ${{ github.token }}
+          MISE_STATE_DIR: ${{ runner.temp }}/mise-state
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        shell: bash
         run: |
-          set -euo pipefail
-          ./bootstrap.sh
-
-      - name: Verify bootstrap results
-        run: |
-          set -euo pipefail
-          if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
-            # shellcheck disable=SC1091
-            source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-          fi
-          home-manager generations
-          fish --version
-          fish -c 'echo ok'
-          bash -lc 'echo ok'
-
-  bootstrap-e2e-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run bootstrap end-to-end
-        run: |
-          set -euo pipefail
-          ./bootstrap.sh
-
-      - name: Verify bootstrap results
-        run: |
-          set -euo pipefail
-          if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
-            # shellcheck disable=SC1091
-            source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-          fi
-          home-manager generations
-          fish --version
-          fish -c 'echo ok'
-          bash -lc 'echo ok'
-
-  nix-home-manager:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v17
-
-      - name: Setup Nix cache
-        if: matrix.os != 'macos-latest'
-        uses: DeterminateSystems/magic-nix-cache-action@v7
-
-      - name: Validate flake
-        run: nix flake check --impure
-
-      - name: Apply Home Manager config
-        run: |
-          set -euo pipefail
-          nix run .#switch --impure
-
-      - name: Verify core tools
-        run: |
-          set -euo pipefail
-          node --version
-          python --version
-          rustc --version
-          go version
-          rg --version
-          jq --version
-          git config --file "$HOME/.config/git/config" --get init.defaultBranch
-          tsc --version
-
-      - name: Verify shells work
-        run: |
-          set -euo pipefail
-          fish --version
-          fish -c 'echo ok'
-          bash -lc 'echo ok'
+          mise trust
+          # Hosted runners are disposable; replace their default shell dotfiles.
+          mise bootstrap --yes --update --force-dotfiles --skip user
+          # Apply only the login shell with sudo, targeting the original SUDO_USER.
+          # Keep root from recording history using its own HOME in the user's store.
+          sudo --preserve-env=MISE_STATE_DIR env MISE_HISTORY_ENABLED=false "$(command -v mise)" -C "$PWD" bootstrap user apply --yes
+          mise bootstrap status --missing
+          mise bootstrap dotfiles status --missing

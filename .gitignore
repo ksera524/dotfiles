@@ -1,1 +1,8 @@
-home.local.nix
+mise.local.toml
+mise.*.local.toml
+.miserc.local.toml
+/.migration-backup/
+
+# SSH files belong to local track history, not this shared repository.
+/ssh/
+/shell/ssh/

@@ -1,0 +1,74 @@
+min_version = "2026.10.8"
+include = ["mise/tools.toml", "mise/packages.toml"]
+
+[env]
+EDITOR = "vim"
+VISUAL = "vim"
+NODE_ENV = "development"
+GOPATH = "{{ env.HOME }}/go"
+_.path = ["~/.local/bin", "~/.cargo/bin", "~/go/bin"]
+# A stable link to this checkout, regardless of where it was cloned.
+DOTFILES_DIR = "{{ env.HOME }}/.config/mise/conf.d/dotfiles"
+
+# Configure Ubuntu vendor repositories before installing their packages.
+[bootstrap.directories]
+"/etc/apt/keyrings" = { mode = "0755", phase = "pre-packages", os = "linux" }
+"/etc/apt/sources.list.d" = { mode = "0755", phase = "pre-packages", os = "linux" }
+
+[bootstrap.files]
+"/etc/apt/keyrings/dotfiles-docker.asc" = { source = "linux/apt/docker.asc", mode = "0644", phase = "pre-packages", os = "linux" }
+"/etc/apt/keyrings/dotfiles-tailscale.asc" = { source = "linux/apt/tailscale.asc", mode = "0644", phase = "pre-packages", os = "linux" }
+# Use the existing .list names to avoid duplicate repositories/Signed-By conflicts.
+"/etc/apt/sources.list.d/docker.sources" = { state = "absent", phase = "pre-packages", os = "linux" }
+"/etc/apt/sources.list.d/tailscale.sources" = { state = "absent", phase = "pre-packages", os = "linux" }
+
+[bootstrap.files."/etc/apt/sources.list.d/docker.list"]
+os = "linux"
+phase = "pre-packages"
+mode = "0644"
+template = true
+content = """
+deb [arch={{ exec(command="dpkg --print-architecture") }} signed-by=/etc/apt/keyrings/dotfiles-docker.asc] https://download.docker.com/linux/ubuntu {{ exec(command=". /etc/os-release && echo $VERSION_CODENAME") }} stable
+"""
+
+[bootstrap.files."/etc/apt/sources.list.d/tailscale.list"]
+os = "linux"
+phase = "pre-packages"
+mode = "0644"
+template = true
+content = """
+deb [signed-by=/etc/apt/keyrings/dotfiles-tailscale.asc] https://pkgs.tailscale.com/stable/ubuntu {{ exec(command=". /etc/os-release && echo $VERSION_CODENAME") }} main
+"""
+
+[bootstrap.repos]
+"~/.local/share/fish/plugins/pure" = { url = "https://github.com/pure-fish/pure.git", ref = "v4.19.0" }
+
+[bootstrap.hooks]
+# Fish must exist before bootstrap.user changes the login shell.
+pre-packages = '"{{ mise_bin }}" -C "{{ config_root }}" run --skip-tools bootstrap:host-packages'
+
+[dotfiles]
+# conf.d folders retain relative source paths and load tools in every directory.
+"~/.config/mise/conf.d/dotfiles" = { source = "." }
+"~/.config/mise/conf.d/dotfiles-platform" = { source = "mise/conf.d/platform" }
+"~/.config/mise/conf.d/dotfiles-tasks" = { source = "mise/conf.d/tasks" }
+"~/.config/mise/miserc.toml" = { source = ".miserc.toml" }
+"~/.config/mise/conf.d/dotfiles-tracking.toml" = { source = "mise/tracking.toml" }
+"~/.bashrc" = { source = "shell/bashrc" }
+"~/.bash_profile" = { source = "shell/bash_profile" }
+"~/.config/fish/config.fish" = { source = "shell/fish/config.fish" }
+"~/.config/fish/dotfiles-functions" = { source = "shell/fish/functions" }
+"~/.config/fish/conf.d/00-pure-path.fish" = { source = "shell/fish/conf.d/00-pure-path.fish" }
+"~/.config/fish/conf.d/prompt-git-cache.fish" = { source = "shell/fish/conf.d/prompt-git-cache.fish" }
+"~/.config/fish/conf.d/pure.fish" = { source = "~/.local/share/fish/plugins/pure/conf.d/pure.fish" }
+"~/.config/fish/pure-functions" = { source = "~/.local/share/fish/plugins/pure/functions" }
+"~/.config/git/config" = { source = "git/gitconfig" }
+"~/.config/git/ignore" = { source = "git/gitignore_global" }
+"~/.ssh" = { permissions = "0700" }
+"~/.ssh/config" = { permissions = "0600" }
+"~/.ssh/authorized_keys" = { permissions = "0600" }
+"~/.config/dotfiles/vscode/extensions.json" = { source = ".vscode/extensions.json" }
+"~/.config/Code/User/settings.json" = { source = ".vscode/settings.json", variants = [{ os = "linux" }, { os = "macos", target = "~/Library/Application Support/Code/User/settings.json" }] }
+"~/.config/Code/User/extensions.json" = { source = ".vscode/extensions.json", variants = [{ os = "linux" }, { os = "macos", target = "~/Library/Application Support/Code/User/extensions.json" }] }
+"~/.vscode-server/data/Machine/settings.json" = { source = ".vscode/settings.json", variants = [{ os = "linux" }] }
+"~/.vscode-server/data/Machine/extensions.json" = { source = ".vscode/extensions.json", variants = [{ os = "linux" }] }

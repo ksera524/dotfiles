@@ -1,0 +1,91 @@
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+if command -v mise >/dev/null 2>&1; then
+  if [[ $- == *i* ]]; then
+    eval "$(mise activate bash)"
+  else
+    eval "$(mise env --shell bash)"
+  fi
+fi
+
+[[ $- == *i* ]] || return
+
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+export HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend checkwinsize
+
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias ls='eza'
+alias cat='bat'
+alias find='fd'
+alias grep='rg'
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gd='git diff'
+alias gl='git log --oneline --graph --decorate'
+alias gp='git push'
+alias gpl='git pull'
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+alias cc='claude --dangerously-skip-permissions'
+alias cx='codex --yolo'
+
+ghq-cd() {
+  local dest
+  dest="$(ghq list -p | fzf --prompt='ghq> ' --height=40% --reverse)"
+  if [ -n "$dest" ]; then
+    cd "$dest" || return
+  fi
+}
+
+__dotfiles_dir() {
+  local dir="${DOTFILES_DIR:-$HOME/.config/mise/conf.d/dotfiles}"
+  if [ -z "${DOTFILES_DIR:-}" ] && [ ! -f "$dir/mise.toml" ]; then
+    dir="$HOME/src/github.com/ksera524/dotfiles"
+  fi
+  if [ ! -d "$dir" ]; then
+    printf 'Error: DOTFILES_DIR does not exist: %s\n' "$dir" >&2
+    return 1
+  fi
+  if [ ! -f "$dir/mise.toml" ]; then
+    printf 'Error: DOTFILES_DIR has no mise.toml: %s\n' "$dir" >&2
+    return 1
+  fi
+  printf '%s\n' "$dir"
+}
+
+dotfiles-bootstrap() {
+  local dir
+  dir="$(__dotfiles_dir)" || return
+  mise -C "$dir" bootstrap "$@"
+}
+
+cdd() {
+  local dir
+  dir="$(__dotfiles_dir)" || return
+  cd "$dir" || return
+}
+
+dotpush() {
+  local dir
+  dir="$(__dotfiles_dir)" || return
+  git -C "$dir" add -A || return
+  if git -C "$dir" diff --cached --quiet; then
+    printf 'No dotfiles changes to push.\n'
+    return 0
+  fi
+  git -C "$dir" commit -m "${1:-Update dotfiles}" || return
+  git -C "$dir" push
+}
+
+if [ -f "$HOME/.bashrc.local" ]; then
+  . "$HOME/.bashrc.local"
+fi
