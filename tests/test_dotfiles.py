@@ -4,7 +4,6 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
-import tomllib
 import unittest
 
 REPO = Path(__file__).resolve().parents[1]
@@ -64,7 +63,6 @@ class DotfilesTests(unittest.TestCase):
                 self.assertIn("COUNTS=1," + ("0" if existing == "bashrc" else "1"), result.stdout)
 
     def test_intel_packages(self):
-        task = tomllib.loads((self.repo / "mise/conf.d/tasks/mise.toml").read_text())["tasks"]["bootstrap:host-packages"]["run"]
         mock = self.root / "bin"
         mock.mkdir()
         for name, body in {
@@ -76,10 +74,10 @@ class DotfilesTests(unittest.TestCase):
             p.chmod(0o755)
         self.env["PATH"] = str(mock) + os.pathsep + self.env["PATH"]
         (self.home / "installed").write_text("git\nvim\nfish\ntmux\npkgconf\nopenssl@3\n")
-        self.run_cmd("bash", "-ec", task)
+        self.run_cmd(MISE, "run", "--skip-tools", "bootstrap:host-packages")
         self.assertFalse((self.home / "calls").exists())
         (self.home / "installed").write_text("git\nvim\nfish\ntmux\n")
-        self.run_cmd("bash", "-ec", task)
+        self.run_cmd(MISE, "run", "--skip-tools", "bootstrap:host-packages")
         self.assertEqual((self.home / "calls").read_text(), "1:install pkgconf openssl@3\n")
 
     def test_dotpush(self):

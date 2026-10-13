@@ -12,7 +12,7 @@ for package in git vim fish tmux pkgconf openssl@3; do
     missing+=("$package")
   fi
 done
-if [ "${#missing[@]}" -gt 0 ]; then
+if [ -n "${missing[*]}" ]; then
   HOMEBREW_NO_INSTALL_UPGRADE=1 brew install "${missing[@]}"
 fi
 '''
