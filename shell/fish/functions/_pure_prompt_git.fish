@@ -1,20 +1,13 @@
 function _pure_prompt_git
-    if set --query pure_enable_git; and test "$pure_enable_git" != true
+    if set -q pure_enable_git; and test "$pure_enable_git" != true
         return
     end
-    if not type -q --no-functions git
-        return 2
+    set -l branch (command git symbolic-ref --quiet --short HEAD 2>/dev/null)
+    if test -z "$branch"
+        set branch (command git rev-parse --short HEAD 2>/dev/null)
     end
-    __prompt_git_collect_async
-    set -l repo (__prompt_git_current_repo)
-    if test -z "$repo"
-        return
-    end
-    if not set -q __prompt_git_cache_repo; or test "$__prompt_git_cache_repo" != "$repo"
-        set -g __prompt_git_cache_repo "$repo"
-        set -g __prompt_git_cache_branch (__prompt_git_branch_sync "$repo")
-    end
-    if test -n "$__prompt_git_cache_branch"
-        echo (_pure_set_color $pure_color_git_branch)"$__prompt_git_cache_branch"
+    if test -n "$branch"
+        set -l color (_pure_set_color $pure_color_git_branch)
+        printf '%s%s\n' "$color" "$branch"
     end
 end

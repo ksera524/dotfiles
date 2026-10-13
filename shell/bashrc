@@ -44,13 +44,7 @@ cdd() {
 dotpush() {
   local dir
   dir="$(__dotfiles_dir)" || return
-  git -C "$dir" add -A || return
-  if git -C "$dir" diff --cached --quiet; then
-    printf 'No dotfiles changes to push.\n'
-    return 0
-  fi
-  git -C "$dir" commit -m "${1:-Update dotfiles}" || return
-  git -C "$dir" push
+  mise -C "$dir" run --skip-tools dotpush -- "$@"
 }
 
 if [ -f "$HOME/.bashrc.local" ]; then

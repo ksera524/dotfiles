@@ -7,7 +7,7 @@ This repository is an Ubuntu (WSL) and macOS dotfiles setup managed by mise:
 - `mise/tools.toml` / `mise/packages.toml`: runtime/CLI tools and apt/brew packages.
 - `mise/aliases.toml`: shared Bash/Fish aliases. Startup files use dotfile edits and bootstrap.mise_shell_activate.
 - `mise/conf.d/platform/`: OS/architecture-specific environment and login shells.
-- `mise/conf.d/tasks/mise.toml`: bootstrap helper tasks.
+- `mise/conf.d/tasks/mise.toml`: bootstrap helper tasks and shared dotpush implementation.
 - `mise/tracking.toml`: global track-mode declarations for local overrides and SSH config; no remote or watcher is configured.
 - `linux/apt/`: official Docker/Tailscale public signing keys; vendor sources are managed by bootstrap.files before packages.
 - `.miserc.toml`: enable automatic platform configuration.

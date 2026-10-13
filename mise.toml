@@ -4,6 +4,8 @@ include = ["mise/tools.toml", "mise/packages.toml", "mise/aliases.toml"]
 [env]
 EDITOR = "vim"
 VISUAL = "vim"
+LSCOLORS = "GxFxCxDxBxegedabagaced"
+LS_COLORS = "di=1;36:ln=1;35:so=1;32:pi=1;33:ex=1;31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43"
 NODE_ENV = "development"
 GOPATH = "{{ env.HOME }}/go"
 _.path = ["~/.local/bin", "~/.cargo/bin", "~/go/bin"]
@@ -63,6 +65,8 @@ fish = true
 # Edit startup files in place; existing user/OS settings stay outside our blocks.
 "~/.bashrc/dotfiles-path" = { line = 'export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"', position = "prepend" }
 "~/.bash_profile/dotfiles-path" = { line = 'export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"', position = "prepend" }
+"~/.profile/dotfiles-loaded" = { line = 'if [ -n "${BASH_VERSION:-}" ]; then __dotfiles_profile_pid=$$; fi', position = "prepend" }
+"~/.bashrc/dotfiles-loaded" = { line = '__dotfiles_bashrc_pid=$$', position = "prepend" }
 "~/.bashrc/dotfiles-config" = { block = '. "$HOME/.config/mise/conf.d/dotfiles/shell/bashrc"' }
 "~/.bash_profile/dotfiles-config" = { source = "shell/bash_profile", template = "tera" }
 "~/.config/fish/config.fish/dotfiles-path" = { line = 'fish_add_path --path "$HOME/.local/bin" /opt/homebrew/bin /usr/local/bin', position = "prepend" }

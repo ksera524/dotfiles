@@ -23,7 +23,7 @@ mise bootstrap --update
 
 初回適用前にプレビューする場合は `mise bootstrap repos apply` で Pure を取得してから `mise bootstrap --dry-run` を実行します。
 
-通常ユーザーで実行してください。Ubuntu の OS パッケージ導入時には mise が必要な `sudo` を呼び出します。Apple Silicon の OS パッケージは mise 内蔵の `brew` パッケージ管理で導入します (Homebrew 本体の事前インストールは不要)。内蔵機能が対応していない Intel Mac のみ、短い mise タスクで native Homebrew を呼び出します。
+通常ユーザーで実行してください。Ubuntu の OS パッケージ導入時には mise が必要な `sudo` を呼び出します。Apple Silicon の OS パッケージは mise 内蔵の `brew` パッケージ管理で導入します (Homebrew 本体の事前インストールは不要)。内蔵機能が対応していない Intel Mac のみ、mise タスクで native Homebrew を呼び出します。導入済みのパッケージはスキップし、更新は明示的に `brew upgrade` で行います。
 
 `bootstrap.user.login_shell` でログインシェルを Fish に変更します。適用時に `chsh` や `/etc/shells` の更新のため、パスワード入力が必要になる場合があります。適用後はログインし直すか、新しいログインセッションを開いてください。Bash から Fish への自動切り替えは行いません。
 
@@ -117,7 +117,7 @@ mise dot undo                                      # 復元操作を取り消す
 
 ## mise に集約する設定
 
-`[env]` と OS 別の `mise/conf.d/platform/mise.*.toml` が、locale・ブラウザー・Rust リンカー・OpenSSL・GOPATH と追加 PATH を管理します。Bash / Fish で同じ値を二重定義せず、`mise exec` から実行したコマンドにも反映します。個人の環境変数は `~/.config/mise/config.local.toml`、このリポジトリ内の上書きは `mise.local.toml` に置いてください。
+`[env]` と OS 別の `mise/conf.d/platform/mise.*.toml` が、locale・色設定・ブラウザー・Rust リンカー・OpenSSL・GOPATH と追加 PATH を管理します。Bash / Fish で同じ値を二重定義せず、`mise exec` から実行したコマンドにも反映します。個人の環境変数は `~/.config/mise/config.local.toml`、このリポジトリ内の上書きは `mise.local.toml` に置いてください。
 
 インストーラーの Git 導入・clone・checkout 検証・信頼設定は `mise bootstrap --from --from-dir` に委ねています。mise が入っていれば、同じセットアップを直接実行できます:
 
@@ -130,14 +130,14 @@ mise bootstrap --from https://github.com/ksera524/dotfiles.git \
 
 | タスク | 処理 | 呼び出し元 |
 | --- | --- | --- |
-| `bootstrap` | インストーラーから受け取った ghq ルートを個人 Git 設定に保存 | bootstrap の最後 |
-| `bootstrap:host-packages` | Intel Mac の Homebrew パッケージ導入 | `pre-packages` フック |
+| `bootstrap:host-packages` | Intel Mac の未導入 Homebrew パッケージのみ導入 | `pre-packages` フック |
+| `dotpush` | dotfiles の add・commit・push | Bash / Fish の `dotpush` |
 
 フックには適用順を指定するタスク呼び出しだけを置きます。初期セットアップの途中で開発ツールを先にインストールしないよう、呼び出しには `mise run --skip-tools` を使います。通常の `bootstrap` タスクは全体の最後なので、Fish 導入のように順序が必要な処理は対応するフェーズで実行します。
 
 Bash / Fish に残すのは履歴設定、Fish 固有の abbreviation、プロンプト、シェル自身を操作する関数です。共通 alias は `mise/aliases.toml` の `[shell_alias]` に集約しています。
 
-起動ファイルへの共有設定の読み込みは `[dotfiles]` の部分編集、activation は `[bootstrap.mise_shell_activate]` に任せます。mise 起動前に必要な PATH だけを先頭に追加します。Bash のログインシェルには標準機能で shims が入り、非対話処理でプロジェクトに応じたツールを選べます。非対話処理でも mise の環境変数が必要な場合は `mise exec -- <command>` を使います。
+起動ファイルへの共有設定の読み込みは `[dotfiles]` の部分編集、activation は `[bootstrap.mise_shell_activate]` に任せます。mise 起動前に必要な PATH だけを先頭に追加します。ログイン設定では `.bash_login` / `.profile` を引き継ぎ、既存設定が `.bashrc` を読み込んだ場合は追加で読み込みません。`.profile` と `.bashrc` の読み込み済み印はシェルプロセス単位なので、子 Bash でも初期化されます。Bash のログインシェルには標準機能で shims が入り、非対話処理でプロジェクトに応じたツールを選べます。非対話処理でも mise の環境変数が必要な場合は `mise exec -- <command>` を使います。
 
 この PR の旧構成を適用済みの場合は、`~/.bashrc`・`~/.bash_profile`・`~/.config/fish/config.fish` のリポジトリへのリンクを退避してから再適用してください。部分編集先が共有ファイルを指したままにならないようにします。
 
@@ -186,6 +186,8 @@ Tailscale の端末認証は `sudo tailscale up` で別途行います。Docker 
 
 ## シェル
 
+Git プロンプトは描画時にブランチ名（detached HEAD では短いコミット ID）だけを取得します。子 Fish・一時ファイル・非同期キャッシュを使わず、checkout 直後や同じディレクトリでの `git init` も次の描画に反映します。旧配置との互換性のため `prompt-git-cache.fish` は空の互換ファイルとして残しています。
+
 Pure v4.19.0 は `[bootstrap.repos]` で取得し、mise dotfiles で配置します。独自 Fish 関数は専用ディレクトリを関数検索パスに追加するため、個人の `functions/` と共存できます。
 
 | コマンド | 動作 |
@@ -210,7 +212,7 @@ Pure v4.19.0 は `[bootstrap.repos]` で取得し、mise dotfiles で配置し�
 │   ├── tracking.toml          機器固有ファイルの履歴
 │   └── conf.d/
 │       ├── platform/          OS・アーキテクチャ別の環境・ログインシェル
-│       └── tasks/             bootstrap 補助タスク
+│       └── tasks/             bootstrap 補助・dotpush タスク
 ├── shell/                     Bash / Fish の設定
 ├── git/                       Git の設定
 ├── linux/apt/                 公式 apt 署名鍵
@@ -241,3 +243,11 @@ mise bootstrap dotfiles status --missing
 `mise bootstrap status` は全ステップの状態を表示します。CI では `--missing` を付け、未導入・未適用も終了コード 1 にします。状態確認に加え、起動ファイルの既存内容と再適用時の冪等性、Bash・Fish の共通 alias・関数・Node の起動を確認します。OS パッケージは runner に導入されます。Docker の導入は検証対象です。ユーザー権限設定と Tailscale の認証は対象外です。
 
 仕様: [mise bootstrap](https://mise.jdx.dev/bootstrap.html) / [mise dotfiles](https://mise.jdx.dev/dotfiles.html) / [conf.d フォルダ](https://mise.jdx.dev/configuration.html#conf-d-folders)。
+
+回帰テスト（Python 3.11 以降・mise・Fish・Git が必要）:
+
+```bash
+python3 -B -m unittest discover -s tests -v
+```
+
+一時ホームで起動ファイルの保持と再適用、Bash/Fish の `dotpush`（ローカル bare リポジトリへの push）、Git プロンプトの更新を確認します。Intel Mac のパッケージ判定は Homebrew を模したコマンドで検証し、実際のパッケージ導入は行いません。CI でも3環境で実行します。

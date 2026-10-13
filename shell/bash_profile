@@ -1,4 +1,12 @@
-# Login shells (including macOS terminals) use the same configuration.
-if [ -f "$HOME/.bashrc" ]; then
+# Preserve the login files shadowed by .bash_profile. They may source .bashrc.
+if [ "${__dotfiles_bashrc_pid:-}" != "$$" ]; then
+  if [ -f "$HOME/.bash_login" ]; then
+    . "$HOME/.bash_login"
+  elif [ "${__dotfiles_profile_pid:-}" != "$$" ] && [ -f "$HOME/.profile" ]; then
+    . "$HOME/.profile"
+  fi
+fi
+# Existing login configuration may already have loaded .bashrc.
+if [[ $- == *i* ]] && [ "${__dotfiles_bashrc_pid:-}" != "$$" ] && [ -f "$HOME/.bashrc" ]; then
   . "$HOME/.bashrc"
 fi

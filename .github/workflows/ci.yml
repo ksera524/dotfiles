@@ -66,3 +66,7 @@ jobs:
           done
           bash -lic 'alias gs && type cdd && node --version'
           fish -ic 'functions -q gs; and functions -q cdd; and node --version'
+
+      - name: Isolated regression checks
+        shell: bash
+        run: mise exec -- python -B -m unittest discover -s tests -v

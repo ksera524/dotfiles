@@ -2,8 +2,6 @@ status is-interactive; or return
 
 set -g fish_greeting
 set -g fish_history_size 10000
-set -gx LSCOLORS GxFxCxDxBxegedabagaced
-set -gx LS_COLORS 'di=1;36:ln=1;35:so=1;32:pi=1;33:ex=1;31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43'
 
 set -g pure_enable_container_detection false
 set -g pure_enable_virtualenv false
