@@ -1,0 +1,6 @@
+[env]
+OPENSSL_DIR = "/opt/homebrew/opt/openssl@3"
+PKG_CONFIG_PATH = "{{ env.OPENSSL_DIR }}/lib/pkgconfig{% if env.PKG_CONFIG_PATH | default(value='') %}:{{ env.PKG_CONFIG_PATH }}{% endif %}"
+
+[bootstrap.user]
+login_shell = "/opt/homebrew/bin/fish"

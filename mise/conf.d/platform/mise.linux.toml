@@ -1,0 +1,6 @@
+[env]
+LANG = "C.UTF-8"
+LC_ALL = "C.UTF-8"
+BROWSER = "{% if env.WSL_DISTRO_NAME | default(value='') %}{{ exec(command='command -v wslview || echo xdg-open') }}{% else %}xdg-open{% endif %}"
+CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER = "clang"
+RUSTFLAGS = "-C link-arg=-fuse-ld=mold"

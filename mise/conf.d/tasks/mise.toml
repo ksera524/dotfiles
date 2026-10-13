@@ -1,0 +1,32 @@
+[tasks."bootstrap:host-packages"]
+description = "Install missing host packages on Intel Macs"
+shell = "bash -e -c"
+run = '''
+if [ "$(uname -sm)" != "Darwin x86_64" ]; then
+  exit 0
+fi
+installed=$(brew list --formula -1)
+missing=()
+for package in git vim fish tmux pkgconf openssl@3; do
+  if ! printf '%s\n' "$installed" | command grep -Fxq "$package"; then
+    missing+=("$package")
+  fi
+done
+if [ -n "${missing[*]}" ]; then
+  HOMEBREW_NO_INSTALL_UPGRADE=1 brew install "${missing[@]}"
+fi
+'''
+
+[tasks.dotpush]
+description = "Commit and push dotfiles changes"
+dir = "{{ config_root }}/../../.."
+usage = 'arg "[message]" default="Update dotfiles" help="Commit message"'
+run = '''
+git add -A
+if git diff --cached --quiet; then
+  printf 'No dotfiles changes to push.\n'
+  exit 0
+fi
+git commit -m "${usage_message:-Update dotfiles}"
+git push
+'''

@@ -1,7 +1,3 @@
-[user]
-	name = ksera524
-	email = ksera524@gmail.com
-
 [init]
 	defaultBranch = main
 
@@ -74,3 +70,7 @@
 [ghq]
 	root = ~/src
 	user = ksera524
+
+# Machine-specific identity and overrides are not committed.
+[include]
+	path = ~/.gitconfig.local
