@@ -1,0 +1,52 @@
+[[ $- == *i* ]] || return
+
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+export HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend checkwinsize
+
+ghq-cd() {
+  local dest
+  dest="$(ghq list -p | fzf --prompt='ghq> ' --height=40% --reverse)"
+  if [ -n "$dest" ]; then
+    cd "$dest" || return
+  fi
+}
+
+__dotfiles_dir() {
+  local dir="${DOTFILES_DIR:-$HOME/.config/mise/conf.d/dotfiles}"
+  if [ -z "${DOTFILES_DIR:-}" ] && [ ! -f "$dir/mise.toml" ]; then
+    dir="$HOME/src/github.com/ksera524/dotfiles"
+  fi
+  if [ ! -d "$dir" ]; then
+    printf 'Error: DOTFILES_DIR does not exist: %s\n' "$dir" >&2
+    return 1
+  fi
+  if [ ! -f "$dir/mise.toml" ]; then
+    printf 'Error: DOTFILES_DIR has no mise.toml: %s\n' "$dir" >&2
+    return 1
+  fi
+  printf '%s\n' "$dir"
+}
+
+dotfiles-bootstrap() {
+  local dir
+  dir="$(__dotfiles_dir)" || return
+  mise -C "$dir" bootstrap "$@"
+}
+
+cdd() {
+  local dir
+  dir="$(__dotfiles_dir)" || return
+  cd "$dir" || return
+}
+
+dotpush() {
+  local dir
+  dir="$(__dotfiles_dir)" || return
+  mise -C "$dir" run --skip-tools dotpush -- "$@"
+}
+
+if [ -f "$HOME/.bashrc.local" ]; then
+  . "$HOME/.bashrc.local"
+fi

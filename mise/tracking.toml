@@ -1,0 +1,13 @@
+# Loaded as global config; project config cannot declare tracking entries.
+[settings.history]
+enabled = true
+sync = "manual"
+
+[dotfiles]
+"~/.bashrc.local" = { mode = "track" }
+"~/.config/fish/config.local.fish" = { mode = "track" }
+"~/.config/mise/config.local.toml" = { mode = "track" }
+"~/.config/mise/miserc.local.toml" = { mode = "track" }
+"~/.gitconfig.local" = { mode = "track" }
+"~/.ssh/config" = { mode = "track" }
+"~/.ssh/authorized_keys" = { mode = "track" }

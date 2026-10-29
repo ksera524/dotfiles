@@ -1,6 +1,0 @@
-{ ... }:
-{
-  home.sessionVariables = {
-    BROWSER = "open";
-  };
-}

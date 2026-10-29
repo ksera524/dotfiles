@@ -1,237 +1,253 @@
 # Dotfiles
 
-Nix Flakes + Home Manager で管理する、macOS と Ubuntu (WSL) 向けの dotfiles です。
+mise で管理する Ubuntu (WSL)・macOS 向けの dotfiles です。開発ツール、OS パッケージ、Pure の取得、設定ファイルのリンクを `mise bootstrap` で適用します。`install.sh` は mise の導入を担当し、Git の準備・clone・環境設定は `mise bootstrap --from` に任せます。
 
-## クイックスタート
+## 初回セットアップ
+
+curl と Bash があれば、次のコマンドで mise・Git の導入、clone、`mise bootstrap` を順に実行できます。macOS は Xcode Command Line Tools (`xcode-select --install`) が必要で、Intel Mac のみ [Homebrew](https://brew.sh/) を事前に用意します。
 
 ```bash
-mkdir -p ~/src/github.com/ksera524
-git clone https://github.com/ksera524/dotfiles.git ~/src/github.com/ksera524/dotfiles
-cd ~/src/github.com/ksera524/dotfiles
-./bootstrap.sh
+curl -fsSL https://raw.githubusercontent.com/ksera524/dotfiles/main/install.sh | bash
 ```
 
-この設定ではシステムのログインシェルは bash のままにし、対話型の bash セッション開始時に fish を起動します。
+clone 先は `~/src/github.com/ksera524/dotfiles` に統一しています。既存の checkout は mise が再利用し、`--update` で fast-forward 更新します。別リポジトリや衝突するディレクトリは mise が拒否します。
 
-`bootstrap.sh` は `sudo` ではなく通常ユーザーで実行してください。
+Bash・Fish の起動ファイルは mise の部分編集で管理します。既存の通常ファイルを保持し、共有設定の読み込みと activation を追加するため、Ubuntu 標準の `.bashrc` も退避不要です。Home Manager の旧リンクは、先に下記の移行手順で退避してください。Git・VS Code など全体をリンクする配置先の通常ファイルは、事前に退避が必要です。
 
-`bootstrap.sh` は `scripts/switch.sh` を呼び出し、前提ツールの準備と Home Manager 設定の適用を行います。
+手動で clone 済み・mise 導入済みの場合は、任意の配置先で直接適用できます (`install.sh` は常に上記の標準配置先を使います):
 
-このリポジトリは個人用 dotfiles のため、`~/.config/dotfiles/home.local.nix` の local override を優先し、`--impure` を前提にしています。
+```bash
+mise trust
+mise bootstrap --update
+```
+
+初回適用前にプレビューする場合は `mise bootstrap repos apply` で Pure を取得してから `mise bootstrap --dry-run` を実行します。
+
+通常ユーザーで実行してください。Ubuntu の OS パッケージ導入時には mise が必要な `sudo` を呼び出します。Apple Silicon の OS パッケージは mise 内蔵の `brew` パッケージ管理で導入します (Homebrew 本体の事前インストールは不要)。内蔵機能が対応していない Intel Mac のみ、mise タスクで native Homebrew を呼び出します。導入済みのパッケージはスキップし、更新は明示的に `brew upgrade` で行います。
+
+`bootstrap.user.login_shell` でログインシェルを Fish に変更します。適用時に `chsh` や `/etc/shells` の更新のため、パスワード入力が必要になる場合があります。適用後はログインし直すか、新しいログインセッションを開いてください。Bash から Fish への自動切り替えは行いません。
+
+| 環境 | ログインシェル |
+| --- | --- |
+| Ubuntu / WSL | `/usr/bin/fish` |
+| macOS Apple Silicon | `/opt/homebrew/bin/fish` |
+| macOS Intel | `/usr/local/bin/fish` |
+
+`.miserc.toml` の `auto_env = true` で OS・アーキテクチャ別設定を読み込みます。同じ設定をグローバルな `~/.config/mise/miserc.toml` にも配置し、リポジトリ外からの bootstrap にも反映します。Intel Mac の Fish は `pre-packages` フックから `bootstrap:host-packages` タスクを呼び、ログインシェル変更より前に導入します。
+
+```bash
+mise bootstrap user status
+mise bootstrap user apply --dry-run
+mise bootstrap user apply
+```
+
+`user apply` だけを実行する場合は、先に Fish を導入してください。
+
+## Home Manager からの切り替え
+
+既存マシンでは、初回セットアップの適用前に次を行います。実ファイルは mise が競合として保護しますが、既存シンボリックリンクは再リンクされるため、先にバックアップしてください。`--force` を常用する必要はありません。
+
+1. `~/.config/dotfiles/home.local.nix` の個人設定を確認し、Git の名前・メールなどを下記の個人設定へ移します。現在の Git 設定は `git config --global --list --show-origin` で確認できます。
+2. Home Manager が管理していた Bash・Git・VS Code の設定を退避します。Nix 削除後も参照したい設定は `cp -L` などでリンク先の内容も保存します。既存 `~/.gitconfig` が古い設定を読み込んでいる場合も確認してください。
+3. Fish の旧設定を以下のように退避します。古い `conf.d/env.fish` や `plugin-pure.fish` が残ると、Nix の環境変数や旧 Pure を読み込むため、設定ディレクトリ全体を入れ替えます。退避先がすでにある場合は別名を選んでください。
+
+```bash
+mv ~/.config/fish ~/.config/fish.home-manager-backup
+```
+
+4. 初回セットアップを実行します。必要な `config.local.fish`、`fish_variables`、個人の `functions/` は退避先から選んで戻してください。Home Manager の生成ファイルは戻しません。
+5. 新しいターミナルで `mise dot status --missing`、`mise exec -- node --version`、`mise exec -- rustc --version` を確認します。旧 `OPENSSL_DIR`・`OPENSSL_LIB_DIR`・`OPENSSL_INCLUDE_DIR`・`PKG_CONFIG_PATH` が Nix を指していないか確認し、独自のシェル設定に残した Nix 初期化も取り除きます。
+
+このリポジトリへの変更だけで、インストール済み Nix や Home Manager はアンインストールされません。新しい環境の確認後、使用した Nix インストーラーのアンインストール手順に従って削除できます。
 
 ## 個人設定
 
-Git のユーザー情報は、追跡対象の Nix モジュールにはあえて固定していません。
+Git のユーザー情報は追跡対象に含めません。
 
 ```bash
-cp home.local.nix.sample ~/.config/dotfiles/home.local.nix
-$EDITOR ~/.config/dotfiles/home.local.nix
+cp git/gitconfig.local.sample ~/.gitconfig.local
+$EDITOR ~/.gitconfig.local
 ```
 
-最低限、次を設定してください:
+共通 Git 設定は `~/.config/git/config` から `~/.gitconfig.local` を最後に読み込みます。既存の個人設定がある場合は、サンプルで上書きせず編集してください。
 
-```nix
-programs.git.userName = "Your Name";
-programs.git.userEmail = "you@example.com";
-```
-
-標準配置は `~/src/github.com/ksera524/dotfiles` です。別の場所に置く場合は local override で `DOTFILES_DIR` を指定してください:
-
-```nix
-home.sessionVariables.DOTFILES_DIR = "/path/to/dotfiles";
-```
-
-追跡対象外の個人設定は `~/.bashrc.local`、`~/.config/fish/config.local.fish`、`~/.config/dotfiles/home.local.nix` に置きます。bash/fish の正本は `home/modules/shell.nix` です。
-
-## コマンド
-
-- 設定を適用: `nix run .#switch --impure`
-- 入力整合性チェック: `nix flake check --impure`
-- VS Code 設定と推奨拡張 JSON のシンボリックリンクを更新: `nix run .#switch --impure`
-- bootstrap ラッパーを再実行: `./scripts/switch.sh`
-
-## カスタムコマンドと alias
-
-### カスタムコマンド
-
-| コマンド | 説明 |
+| 用途 | 配置先 |
 | --- | --- |
-| `ghq-cd` | `ghq list -p` の結果を `fzf` で選択して、そのリポジトリへ移動します。 |
-| `dotfiles-bootstrap` | `DOTFILES_DIR`、または既定の `~/src/github.com/ksera524/dotfiles` で `nix run <dotfiles>#switch --impure` を実行します。 |
-| `cdd` | dotfiles リポジトリへ移動します。 |
-| `dotpush [message]` | dotfiles リポジトリの変更を `git add -A` し、指定メッセージまたは `Update dotfiles` で commit して push します。 |
+| Bash の個人設定 | `~/.bashrc.local` |
+| Fish の個人設定 | `~/.config/fish/config.local.fish` |
+| グローバルな mise 設定の上書き | `~/.config/mise/config.local.toml` |
+| このリポジトリだけの mise 設定の上書き | `mise.local.toml` (Git 管理外) |
+| Git の個人設定 | `~/.gitconfig.local` |
 
-### shell alias / abbreviation
+`~/.config/mise/conf.d/dotfiles` はこのリポジトリへのリンクです。mise はこのフォルダをグローバル設定として読むため、開発ツールは他のディレクトリでも利用できます。clone 先は任意です。`DOTFILES_DIR` はこのリンクを指します。
 
-fish では abbreviation、bash では alias として定義しています。通常は対話型 bash から fish に入るため、fish 側の定義が主に使われます。
+## track mode によるローカル履歴
 
-| 名前 | 展開先 | 対象 |
+`mise/tracking.toml` を `~/.config/mise/conf.d/dotfiles-tracking.toml` に配置し、次の実ファイルを `mode = "track"` で管理します。tracking はグローバル設定にのみ対応しているため、リポジトリの配置定義とは分けています。
+
+- `~/.bashrc.local`
+- `~/.config/fish/config.local.fish`
+- `~/.config/mise/config.local.toml`
+- `~/.config/mise/miserc.local.toml`
+- `~/.gitconfig.local`
+- `~/.ssh/config`
+- `~/.ssh/authorized_keys`
+
+track mode はファイルを移動したり symlink に変えたりせず、現在の場所で編集した内容の履歴を保存します。ファイルがまだない場合は作成せず、作成後から内容を保存できます。共有シェル・Git・VS Code 設定の配置は既存の `[dotfiles]` に任せます。
+
+```bash
+mise dot save --description "Update local settings"  # 現在の内容を保存
+mise dot history                                   # 履歴を一覧
+mise dot rollback ~/.bashrc.local --dry-run         # 復元内容を確認
+mise dot rollback ~/.bashrc.local                   # 以前の内容へ戻す
+mise dot undo                                      # 復元操作を取り消す
+```
+
+有効化後は bootstrap などの変更操作の前後にもチェックポイントが保存されます。履歴は mise の state ディレクトリ (`~/.local/state/mise/history/repo.git`) に保存され、この dotfiles リポジトリには入りません。`sync = "manual"` とし、リモート・監視サービスは設定していません。編集のたびに保存したい場合は上記の `mise dot save` を実行します。
+
+秘密鍵・`known_hosts`・シェル履歴は追跡対象に含めていません。ローカル設定に含まれる機密情報も履歴に残り得るため、機器間同期を追加する際は暗号化設定を含めて対象を見直してください。
+
+## SSH
+
+`~/.ssh/config` と `~/.ssh/authorized_keys` は各 PC の実ファイルを track mode で履歴管理します。ファイルを共有リポジトリから配布したり、ほかの PC のキーで上書きしたりしません。既存内容はそのまま編集でき、履歴は `mise dot save` で保存します。
+
+既存の `~/.ssh` は `0700`、`config` と `authorized_keys` は `0600` に揃えます。権限は `[dotfiles]` の `permissions` で宣言し、chmod 用のフック・タスクは不要です。まだ存在しないファイルは自動生成しません。
+
+秘密鍵と `known_hosts` (接続履歴) は追跡対象外です。SSH ファイルはこのリポジトリの Git 管理からも除外しています。
+
+## mise に集約する設定
+
+`[env]` と OS 別の `mise/conf.d/platform/mise.*.toml` が、locale・色設定・ブラウザー・Rust リンカー・OpenSSL・GOPATH と追加 PATH を管理します。Bash / Fish で同じ値を二重定義せず、`mise exec` から実行したコマンドにも反映します。個人の環境変数は `~/.config/mise/config.local.toml`、このリポジトリ内の上書きは `mise.local.toml` に置いてください。
+
+インストーラーの Git 導入・clone・checkout 検証・信頼設定は `mise bootstrap --from --from-dir` に委ねています。mise が入っていれば、同じセットアップを直接実行できます:
+
+```bash
+mise bootstrap --from https://github.com/ksera524/dotfiles.git \
+  --from-dir "$HOME/src/github.com/ksera524/dotfiles" --yes --update
+```
+
+宣言だけでは表せない補助処理は `mise/conf.d/tasks/mise.toml` の `bootstrap:*` タスクにまとめます。
+
+| タスク | 処理 | 呼び出し元 |
 | --- | --- | --- |
-| `ll` | `ls -alF` | bash / fish |
-| `la` | `ls -A` | bash / fish |
-| `l` | `ls -CF` | bash / fish |
-| `..` | `cd ..` | bash / fish |
-| `...` | `cd ../..` | bash / fish |
-| `....` | `cd ../../..` | bash / fish |
-| `ls` | `eza` | bash / fish |
-| `cat` | `bat` | bash / fish |
-| `find` | `fd` | bash / fish |
-| `grep` | `rg` | bash / fish |
-| `gs` | `git status` | bash / fish |
-| `ga` | `git add` | bash / fish |
-| `gc` | `git commit` | bash / fish |
-| `gd` | `git diff` | bash / fish |
-| `gl` | `git log --oneline --graph --decorate` | bash / fish |
-| `gp` | `git push` | bash / fish |
-| `gpl` | `git pull` | bash / fish |
-| `rm` | `rm -i` | bash / fish |
-| `cp` | `cp -i` | bash / fish |
-| `mv` | `mv -i` | bash / fish |
-| `cc` | `claude --dangerously-skip-permissions` | bash / fish |
-| `cx` | `codex --yolo` | bash / fish |
-| `gq` | `ghq-cd` | fish |
-| `cdp` | `cd ~/projects` | fish |
-| `gco` | `git checkout` | fish |
-| `gcb` | `git checkout -b` | fish |
-| `gcm` | `git commit -m` | fish |
-| `gca` | `git commit --amend` | fish |
-| `grb` | `git rebase` | fish |
-| `gst` | `git stash` | fish |
-| `gstp` | `git stash pop` | fish |
-| `dps` | `docker ps` | fish |
-| `dpsa` | `docker ps -a` | fish |
-| `di` | `docker images` | fish |
-| `dc` | `docker compose` | fish |
-| `dcu` | `docker compose up` | fish |
-| `dcd` | `docker compose down` | fish |
-| `dcl` | `docker compose logs` | fish |
-| `update` | `sudo apt update && sudo apt upgrade` | fish / Linux |
-| `ports` | `ss -tuln` | fish / Linux |
+| `bootstrap:host-packages` | Intel Mac の未導入 Homebrew パッケージのみ導入 | `pre-packages` フック |
+| `dotpush` | dotfiles の add・commit・push | Bash / Fish の `dotpush` |
 
-### Git alias
+フックには適用順を指定するタスク呼び出しだけを置きます。初期セットアップの途中で開発ツールを先にインストールしないよう、呼び出しには `mise run --skip-tools` を使います。通常の `bootstrap` タスクは全体の最後なので、Fish 導入のように順序が必要な処理は対応するフェーズで実行します。
 
-| alias | 展開先 |
+Bash / Fish に残すのは履歴設定、Fish 固有の abbreviation、プロンプト、シェル自身を操作する関数です。共通 alias は `mise/aliases.toml` の `[shell_alias]` に集約しています。
+
+起動ファイルへの共有設定の読み込みは `[dotfiles]` の部分編集、activation は `[bootstrap.mise_shell_activate]` に任せます。mise 起動前に必要な PATH だけを先頭に追加します。ログイン設定では `.bash_login` / `.profile` を引き継ぎ、既存設定が `.bashrc` を読み込んだ場合は追加で読み込みません。`.profile` と `.bashrc` の読み込み済み印はシェルプロセス単位なので、子 Bash でも初期化されます。Bash のログインシェルには標準機能で shims が入り、非対話処理でプロジェクトに応じたツールを選べます。非対話処理でも mise の環境変数が必要な場合は `mise exec -- <command>` を使います。
+
+この PR の旧構成を適用済みの場合は、`~/.bashrc`・`~/.bash_profile`・`~/.config/fish/config.fish` のリポジトリへのリンクを退避してから再適用してください。部分編集先が共有ファイルを指したままにならないようにします。
+
+## 日常の操作
+
+```bash
+mise bootstrap                  # OS パッケージ・ツール・dotfiles を適用
+mise dot apply --dry-run         # 設定ファイルの配置をプレビュー
+mise dot apply                  # 設定ファイルだけを適用
+mise dot status --missing       # 未適用があれば終了コード 1
+mise install                    # 設定済みの開発ツールを導入
+mise upgrade                    # 許容バージョンの範囲で開発ツールを更新
+mise exec jq -- jq --version     # 一時的にツールを利用
+mise registry                   # 利用できるツールを調べる
+```
+
+ツール追加は `mise/tools.toml` の `[tools]` を編集します。Rust は公式 stable (rust-src・rustfmt・clippy を含む) を使います。`latest` は最新版へ追従します。プロジェクト固有のバージョンは各プロジェクトの mise 設定で上書きします。
+
+OS パッケージは `mise/packages.toml` の `[bootstrap.packages]` を編集します。`apt:` は Ubuntu、`brew:` は Apple Silicon 用です。Intel Mac にも追加する場合は `mise/conf.d/tasks/mise.toml` の `[tasks."bootstrap:host-packages"]` を更新します。Ubuntu の Rust は clang + mold を使い、OpenSSL の開発ファイルは OS のパッケージから取得します。macOS は Homebrew の OpenSSL と pkgconf を導入します。
+
+エントリーを削除してもインストール済みのツールや OS パッケージは自動削除されません。不要なものは利用状況を確認して各パッケージマネージャーで削除してください。
+
+## Docker・SSH サーバー・Tailscale (Ubuntu / WSL)
+
+次の OS パッケージを `[bootstrap.packages]` で管理します。mise が apt を呼び出して導入状況を揃え、既存のインストールも利用します。
+
+- Docker: `containerd.io`、`docker-ce`、`docker-ce-cli`、`docker-buildx-plugin`、`docker-compose-plugin`
+- SSH サーバー: `openssh-server`
+- Tailscale: `tailscale`、`tailscale-archive-keyring`
+
+Docker・Tailscale の公式署名鍵は `linux/apt/` に保存しています。`bootstrap.files` がパッケージ導入前に `/etc/apt/keyrings/` と `/etc/apt/sources.list.d/` に配置します。Ubuntu のリリース名と CPU アーキテクチャはマシンから取得します。
+
+既存の `docker.list` と `tailscale.list` は mise の定義で更新します。同じリポジトリを指す `docker.sources` / `tailscale.sources` は、署名鍵のパスが競合しないよう削除対象にしています。独自に編集した定義がある場合は、初回適用前に内容を確認してください。
+
+```bash
+mise bootstrap --update                    # リポジトリ配置・apt 情報更新・導入
+mise bootstrap status --missing            # 全体の状態確認
+mise bootstrap packages upgrade --manager apt  # 管理する apt パッケージを更新
+```
+
+`install.sh` と CI は `--update` を付けて実行します。これらのパッケージと apt 定義は Linux のみが対象で、macOS には適用しません。
+
+Tailscale の端末認証は `sudo tailscale up` で別途行います。Docker のユーザー権限やサービスの起動設定は必要に応じて OS 側で設定します。WSL で systemd を使う場合は `/etc/wsl.conf` の `[boot] systemd=true` が必要です。
+
+参照: [Docker の公式 Ubuntu インストール手順](https://docs.docker.com/engine/install/ubuntu/)、[Tailscale の公式 Linux インストール手順](https://tailscale.com/docs/install/linux)。
+
+## シェル
+
+Git プロンプトは描画時にブランチ名（detached HEAD では短いコミット ID）だけを取得します。子 Fish・一時ファイル・非同期キャッシュを使わず、checkout 直後や同じディレクトリでの `git init` も次の描画に反映します。旧配置との互換性のため `prompt-git-cache.fish` は空の互換ファイルとして残しています。
+
+Pure v4.19.0 は `[bootstrap.repos]` で取得し、mise dotfiles で配置します。独自 Fish 関数は専用ディレクトリを関数検索パスに追加するため、個人の `functions/` と共存できます。
+
+| コマンド | 動作 |
 | --- | --- |
-| `git st` | `git status` |
-| `git co` | `git checkout` |
-| `git br` | `git branch` |
-| `git cm` | `git commit` |
-| `git df` | `git diff` |
-| `git lg` | `git log --oneline --graph --decorate` |
-| `git unstage` | `git reset HEAD --` |
-| `git last` | `git log -1 HEAD` |
-| `git visual` | `gitk` |
-| `git amend` | `git commit --amend` |
-| `git undo` | `git reset --soft HEAD~1` |
-| `git branches` | `git branch -a` |
-| `git remotes` | `git remote -v` |
-| `git tags` | `git tag -l` |
-| `git hist` | `git log --pretty=format:'%h %ad \| %s%d [%an]' --graph --date=short` |
-| `git tree` | `git log --graph --pretty=format:'%C(yellow)%h%C(reset) - %C(green)%ad%C(reset) - %C(blue)%an%C(reset)%C(red)%d%C(reset) %s' --date=short --all` |
-| `git contributors` | `git shortlog --summary --numbered` |
+| `ghq-cd` / Fish の `gq` | ghq のリポジトリを fzf で選んで移動 |
+| `dotfiles-bootstrap` | dotfiles で `mise bootstrap` を実行 (引数も転送) |
+| `cdd` | dotfiles へ移動 |
+| `dotpush [message]` | dotfiles の変更を add・commit・push |
 
-## Nixの使い方（このリポジトリ）
+共通ショートカットは Bash / Fish とも mise の alias として利用できます。共通分の Fish abbreviation は alias に変更したため、入力時の文字列展開は行いません。Fish 固有の abbreviation と Git alias は維持します。`ls` → eza、`cat` → bat、`find` → fd、`grep` → rg、`cc` → Claude Code、`cx` → Codex も利用できます。WSL は `wslview` がインストール済みならブラウザー起動に使い、それ以外は `xdg-open` を使います。
 
-### 1) ツールを追加する
-
-`home/modules/packages.nix` の `home.packages` にパッケージを追加して適用します。
-
-```nix
-# home/modules/packages.nix
-home.packages = with pkgs; [
-  jq
-  ripgrep
-  # 追加したいパッケージ
-  fd
-];
-```
-
-```bash
-nix run .#switch --impure
-```
-
-### 2) ツールを削除する
-
-`home/modules/packages.nix` から対象を消して、再度適用します。
-
-```bash
-nix run .#switch --impure
-```
-
-### 3) 一時的にツールを試す（インストールしない）
-
-```bash
-# 1コマンドだけ実行
-nix shell nixpkgs#jq -c jq --version
-
-# シェルに一時的に入る
-nix shell nixpkgs#ripgrep
-```
-
-### 4) パッケージ検索
-
-```bash
-nix search nixpkgs <keyword>
-```
-
-例: `nix search nixpkgs ghq`
-
-### 5) flake input を更新する
-
-```bash
-# 全inputを更新
-nix flake update
-
-# 特定inputのみ更新
-nix flake lock --update-input nixpkgs
-```
-
-更新後は `flake.lock` の差分を確認し、問題なければコミットします。
-
-`nodejs_24`、`claude-code`、`codex`、`opencode` は unstable input 由来です。更新時は `nix flake update` 後に CI で Home Manager activation と smoke test を確認します。
-
-Rust を公式 stable の最新へ追従したい場合は、`rust-overlay` も更新します。
-
-```bash
-nix flake lock --update-input rust-overlay
-nix run .#switch --impure
-rustc --version
-cargo --version
-```
-
-`Cargo.lock` は global ignore しません。Rust の application/binary crate では lockfile を追跡し、library crate で不要な場合は各リポジトリの `.gitignore` に個別に追加します。
-
-### 6) 現在の構成で入るバージョン確認
-
-```bash
-# 例: ghq
-nix eval --impure --raw .#homeConfigurations.linux.pkgs.ghq.version
-```
-
-macOS の場合は `linux` を `darwin` / `darwin-intel` に読み替えてください。
-
-## 構成
+## 構成と検証
 
 ```text
 .
-├── flake.nix
-├── home/
-│   ├── common.nix
-│   ├── linux.nix
-│   ├── darwin.nix
-│   └── modules/
-│       ├── packages.nix
-│       ├── shell.nix
-│       ├── git.nix
-│       └── vscode.nix
-├── scripts/
-│   ├── bootstrap-prereq.sh
-│   └── switch.sh
-└── home.local.nix.sample
+├── README.md / AGENTS.md
+├── install.sh                 インストーラーの入口
+├── mise.toml                  mise の入口・設定ファイル配置
+├── mise/
+│   ├── tools.toml             ランタイム・開発 CLI
+│   ├── packages.toml          apt / brew パッケージ
+│   ├── tracking.toml          機器固有ファイルの履歴
+│   └── conf.d/
+│       ├── platform/          OS・アーキテクチャ別の環境・ログインシェル
+│       └── tasks/             bootstrap 補助・dotpush タスク
+├── shell/                     Bash / Fish の設定
+├── git/                       Git の設定
+├── linux/apt/                 公式 apt 署名鍵
+├── .vscode/                   VS Code 設定
+└── .github/workflows/         CI
 ```
 
-## 補足
+ルートの `.miserc.toml` は OS 別設定を有効にするための小さな入口です。`mise.toml` はツール・パッケージ定義を include し、`mise/conf.d/` のフォルダから OS 別設定とタスクを読み込みます。これらのフォルダはグローバルな `conf.d` にもリンクするため、リポジトリ外でも利用できます。
 
-- Docker の導入や権限が必要な OS レベル設定は、意図的に Home Manager の責務から外しています。
-- WSL と macOS を正式サポート対象とし、CI で両方を検証しています。
-- Nix インストール直後に `nix` が見つからない場合は `source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh` を実行するか、新しいターミナルを開いてください。
+ローカルでの構文確認:
+
+```bash
+bash -n install.sh
+bash -n shell/bashrc
+bash -n shell/bash_profile
+for file in shell/fish/config.fish shell/fish/conf.d/*.fish shell/fish/functions/*.fish; do
+  fish --no-execute "$file" || break
+done
+```
+
+CI は使い捨ての GitHub ホスト runner で bootstrap を実行し、次の状態確認で乖離があれば失敗します。runner 上で競合する他の dotfiles を置き換えるため、CI のみ `--force-dotfiles` を付けます。Bash・Fish の起動ファイルは部分編集で保持します。パッケージ・dotfiles は通常ユーザーで適用し、ログインシェルだけは CI のパスワード入力を避けるため `sudo mise bootstrap user apply` で元の runner ユーザーに適用します。
+
+```bash
+mise bootstrap status --missing
+mise bootstrap dotfiles status --missing
+```
+
+`mise bootstrap status` は全ステップの状態を表示します。CI では `--missing` を付け、未導入・未適用も終了コード 1 にします。状態確認に加え、起動ファイルの既存内容と再適用時の冪等性、Bash・Fish の共通 alias・関数・Node の起動を確認します。OS パッケージは runner に導入されます。Docker の導入は検証対象です。ユーザー権限設定と Tailscale の認証は対象外です。
+
+仕様: [mise bootstrap](https://mise.jdx.dev/bootstrap.html) / [mise dotfiles](https://mise.jdx.dev/dotfiles.html) / [conf.d フォルダ](https://mise.jdx.dev/configuration.html#conf-d-folders)。
+
+回帰テスト（Python 3.11 以降・mise・Fish・Git が必要）:
+
+```bash
+python3 -B -m unittest discover -s tests -v
+```
+
+一時ホームで起動ファイルの保持と再適用、Bash/Fish の `dotpush`（ローカル bare リポジトリへの push）、Git プロンプトの更新を確認します。Intel Mac のパッケージ判定は Homebrew を模したコマンドで検証し、実際のパッケージ導入は行いません。CI でも3環境で実行します。

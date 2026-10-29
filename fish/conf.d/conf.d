@@ -1,1 +1,0 @@
-/home/ksera/dotfiles/fish/conf.d
